@@ -1,5 +1,5 @@
 const cartApiUrl = ("https://67701d46b353db80c3246245.mockapi.io/api/carts");
-async function createCartAndPushUserToCart(userLogedin) {
+async function registerCartUser(userLogedin) {
     try {
         const reponse = await fetch(`${cartApiUrl}`, {
             method: "POST",
@@ -70,4 +70,4 @@ async function updateProductInApi(cartID, userLogedIn, updatedProduct, updatedTo
         console.log(error);
     }
 }
-export { createCartAndPushUserToCart, addProductToCartContainerUser, fetchCartFromApi, updateProductInApi }
+export { registerCartUser, addProductToCartContainerUser, fetchCartFromApi, updateProductInApi }

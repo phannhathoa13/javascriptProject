@@ -1,8 +1,7 @@
-import { fetchCartFromApi } from '../../controllers/cartControllers.js';
-import { fetchUserAPI } from '../../controllers/userController.js';
-import { postCartIDToParam } from '../../routes/cartRoutes.js';
+import { fetchUserAPI } from "../../../controllers/userController.js";
+import { postCartIDToParam } from "../../../routes/cartRoutes.js";
+
 const listUser = await fetchUserAPI();
-const listCart = await fetchCartFromApi();
 document.getElementById('form').addEventListener('submit', function (event) {
     event.preventDefault();
 

@@ -1,7 +1,7 @@
 const validationUsername = (usernameInput) => {
-    return usernameInput = /^[a-zA-Z0-9_!@#$%^&;,./]+$/;
+    return /^[a-zA-Z0-9_!@#$%^&;,./]+$/.test(usernameInput);
 }
 const validationPassword = (passwordInput) => {
-    return passwordInput = /^(?=.*[a-zA-Z])(?=.*[!@#$%^&]).{8,}$/;
+    return /^(?=.*[a-zA-Z0-9])(?=.*[!@#$%^&]).{8,}$/.test(passwordInput);
 }
 export { validationUsername, validationPassword };

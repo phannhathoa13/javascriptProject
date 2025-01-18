@@ -1,12 +1,13 @@
-import { addProductToCartContainerUser, fetchCartFromApi } from "../../controllers/cartControllers.js";
-import { fetchProductAPI } from "../../controllers/productControllers.js";
-import Cart from "../../models/cartModels.js";
-import { getValueInQuerryParam, postCartIDToParam } from "../../routes/cartRoutes.js";
+import { addProductToCartContainerUser, fetchCartFromApi } from "../../../controllers/cartControllers.js";
+import { fetchProductAPI } from "../../../controllers/productControllers.js";
+import Cart from "../../../models/cartModels.js";
+import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
+
 const getListProduct = await fetchProductAPI();
 const listCart = await fetchCartFromApi();
 
 const getUserIDInParam = getValueInQuerryParam('cartID');
-const userLogedIn = getUserInCart();
+let userLogedIn = getUserInCart();
 
 displayListProduct();
 function displayListProduct() {
@@ -24,6 +25,7 @@ function displayListProduct() {
     });
 }
 
+
 async function addToCart(nameProductDOM, priceProductDOM) {
     try {
         const createAt = new Date();
@@ -40,7 +42,18 @@ async function addToCart(nameProductDOM, priceProductDOM) {
                     price: priceProductDOM,
                 });
             };
-            await addProductToCartContainerUser(getUserIDInParam, { products: userLogedIn.products });
+            const updatedCart = await addProductToCartContainerUser(getUserIDInParam,userLogedIn)
+            if (updatedCart) {
+                userLogedIn = updatedCart
+            }
+            // .then((updatedCart) => {
+            //     if (updatedCart) {
+            //         userLogedIn.user = updatedCart.user;
+            //         userLogedIn.products = updatedCart.products;
+            //         userLogedIn.totalPrice = updatedCart.totalPrice;
+            //         userLogedIn.createdAt = updatedCart.createdAt;
+            //     }
+            // });
         }
         else {
             const cartValue = new Cart(
@@ -53,11 +66,27 @@ async function addToCart(nameProductDOM, priceProductDOM) {
                 price: priceProductDOM,
             })
             cartValue.totalPrice += priceProductDOM;
-            await addProductToCartContainerUser(getUserIDInParam, cartValue);
+
+            const updatedCart = await addProductToCartContainerUser(getUserIDInParam, cartValue);
+            if (updatedCart) {
+                userLogedIn = updatedCart
+            }
+            else {
+                userLogedIn = cartValue
+            }
+            // .then((updatedCart) => {
+            //     if (updatedCart) {
+            //         userLogedIn.user = updatedCart.user;
+            //         userLogedIn.products = updatedCart.products;
+            //         userLogedIn.totalPrice = updatedCart.totalPrice;
+            //         userLogedIn.createdAt = updatedCart.createdAt;
+            //     }
+            // });
         }
     } catch (error) {
         console.error(error);
     }
+    console.log(userLogedIn);
 }
 
 function getUserInCart() {

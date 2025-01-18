@@ -4,10 +4,10 @@ async function fetchUserAPI() {
         const reponse = await fetch(userApiURL);
         return await reponse.json()
     } catch (error) {
-        console.error(`Fetch error: ${error}`);
+        console.error(`fetch list user error: ${error}`);
     }
 }
-async function postUserToApi(user) {
+async function registerAccountUser(user) {
     try {
         const reponse = await fetch(userApiURL, {
             method: "POST",
@@ -25,12 +25,12 @@ async function postUserToApi(user) {
         return await reponse.json();
 
     } catch (error) {
-        console.error(`Post error: `, error);
+        console.error(`create user account error: `, error);
     }
 }
 
 
-async function removeProductInCartFromUserAPI(userID, api) {
+async function removeAccount(userID, api) {
     try {
         const reponse = await fetch(`${api}/${userID}/`, {
             method: "DELETE",
@@ -40,7 +40,7 @@ async function removeProductInCartFromUserAPI(userID, api) {
         })
         return await reponse.json();
     } catch (error) {
-        console.error(`Delete error: ${error}`);
+        console.error(`remove account error: ${error}`);
     }
 }
 
@@ -57,7 +57,7 @@ async function editProductInCartUser(userLogedInID, productNameDOM, newValue) {
         })
         return await reponse.json();
     } catch (error) {
-        console.error(`Delete error: ${error}`);
+        console.error(`edit product error: ${error}`);
     }
 }
-export { fetchUserAPI, editProductInCartUser, removeProductInCartFromUserAPI, postUserToApi };
+export { fetchUserAPI, editProductInCartUser, removeAccount, registerAccountUser };

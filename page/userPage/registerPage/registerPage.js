@@ -1,8 +1,9 @@
-import User from '../../models/user.js';
-import { validationUsername, validationPassword } from '../../validation/loginValidation.js';
-import { fetchUserAPI, postUserToApi } from '../../controllers/userController.js';
-import { createCartAndPushUserToCart } from '../../controllers/cartControllers.js';
-import Cart from '../../models/cartModels.js';
+import { registerCartUser } from "../../../controllers/cartControllers.js";
+import { fetchUserAPI, registerAccountUser } from "../../../controllers/userController.js";
+import Cart from "../../../models/cartModels.js";
+import User from "../../../models/user.js";
+import { validationPassword, validationUsername } from "../../../validation/loginValidation.js";
+
 const listUser = await fetchUserAPI();
 document.getElementById('form').addEventListener('submit', function (event) {
     event.preventDefault();
@@ -40,8 +41,8 @@ document.getElementById('form').addEventListener('submit', function (event) {
             userValue,
             createdAt.toDateString()
         )
-        postUserToApi(userValue);
-        createCartAndPushUserToCart(cartValue);
+        registerAccountUser(userValue);
+        registerCartUser(cartValue);
         this.reset();
         window.alert("register successed");
         window.location.href = "../loginPage/loginPage.html";
