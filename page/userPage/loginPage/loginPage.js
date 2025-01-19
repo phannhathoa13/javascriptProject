@@ -8,7 +8,7 @@ document.getElementById('form').addEventListener('submit', function (event) {
     const usernameInput = document.getElementById('username').value;
     const passwordInput = document.getElementById('pwd').value;
     if (isAccountHaveAdminRole(usernameInput, passwordInput)) {
-        window.location.href = "../../managerPage/producctManager/productManager.html"
+        window.location.href = "../../adminPage/managerPage/producctManager/productManager.html"
         return;
     }
     else if (!isAccountExisted(usernameInput, passwordInput)) {

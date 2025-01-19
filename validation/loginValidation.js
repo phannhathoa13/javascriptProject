@@ -4,4 +4,7 @@ const validationUsername = (usernameInput) => {
 const validationPassword = (passwordInput) => {
     return /^(?=.*[a-zA-Z0-9])(?=.*[!@#$%^&]).{8,}$/.test(passwordInput);
 }
-export { validationUsername, validationPassword };
+const validationEmail = (emailInput) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput);
+}
+export { validationUsername, validationPassword, validationEmail };

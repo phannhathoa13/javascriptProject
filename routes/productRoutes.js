@@ -2,9 +2,13 @@ function getValueInParam() {
     const param = new URLSearchParams(window.location.search);
     return param;
 }
-function pushUserIDAndProductToViewCart(userID, products) {
-    const valueString = encodeURIComponent(JSON.stringify(userID));
-    const products = encodeURIComponent(JSON.stringify(products));
-    window.location.href = `../../hell-project/page/viewCart/viewCart.html?&userID=${valueString}&products=${products}`
+function postProductToParam(product) {
+    const valueString = encodeURIComponent(JSON.stringify(product));
+    return `?product=${valueString}`
 }
-export { getValueInParam, pushUserIDAndProductToViewCart };
+function postProductIdAndValueToParam(productId, productvalue) {
+    const productIDString = encodeURIComponent(JSON.stringify(productId));
+    const productValueString = encodeURIComponent(JSON.stringify(productvalue));
+    return `?productId=${productIDString}&product=${productValueString}`
+}
+export { getValueInParam, postProductIdAndValueToParam, postProductToParam };

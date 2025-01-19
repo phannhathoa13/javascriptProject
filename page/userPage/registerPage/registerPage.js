@@ -2,7 +2,7 @@ import { registerCartUser } from "../../../controllers/cartControllers.js";
 import { fetchUserAPI, registerAccountUser } from "../../../controllers/userController.js";
 import Cart from "../../../models/cartModels.js";
 import User from "../../../models/user.js";
-import { validationPassword, validationUsername } from "../../../validation/loginValidation.js";
+import { validationEmail, validationPassword, validationUsername } from "../../../validation/loginValidation.js";
 
 const listUser = await fetchUserAPI();
 document.getElementById('form').addEventListener('submit', function (event) {
@@ -21,6 +21,10 @@ document.getElementById('form').addEventListener('submit', function (event) {
     }
     else if (!confirmPasswordInput || passwordInput != confirmPasswordInput) {
         window.alert("your password and confirm password must the same");
+        return;
+    }
+    else if (!emailInput || !validationEmail(emailInput)) {
+        window.alert("your email is empty or wrong please try again");
         return;
     }
     else if (isAccountExist(usernameInput, emailInput)) {
@@ -48,7 +52,7 @@ document.getElementById('form').addEventListener('submit', function (event) {
         window.location.href = "../loginPage/loginPage.html";
     }
 })
-document.getElementById('goLogin').addEventListener('click', (event) => {
+document.getElementById('login').addEventListener('click', (event) => {
     event.preventDefault();
     window.location.href = "../loginPage/loginPage.html";
 })

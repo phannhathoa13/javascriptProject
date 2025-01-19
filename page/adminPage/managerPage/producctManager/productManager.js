@@ -1,6 +1,8 @@
-import Product from '../../models/product.js';
-import { fetchProductAPI, postProductToApi, deleteProductInAPI } from '../../controllers/productControllers.js';
-const productsAPI = ("https://67701d46b353db80c3246245.mockapi.io/listUser/products");
+
+import { deleteProductInAPI, fetchProductAPI, createProduct } from "../../../../controllers/productControllers.js";
+import Product from "../../../../models/product.js";
+import { postProductIdAndValueToParam } from "../../../../routes/productRoutes.js";
+
 const listProduct = await fetchProductAPI();
 const listProductDOM = document.getElementById('listProduct');
 displayProduct();
@@ -14,12 +16,12 @@ function displayProduct() {
         buttonEditDOM.textContent = "Edit";
         buttonRemoveDOM.textContent = "Delete";
         buttonEditDOM.onclick = () => {
-            const newURL = postValueToParam(products.id, products);
-            window.location.href = newURL;
+            const urlContainerProduct = postProductIdAndValueToParam(products.id, products);
+            window.location.href = `../editPage/editPage.html${urlContainerProduct}`;
         }
         buttonRemoveDOM.onclick = () => {
-            deleteProductInAPI(products.id, productsAPI);
             productsDOM.remove();
+            deleteProductInAPI(products.id);
         }
         productsDOM.appendChild(buttonEditDOM);
         productsDOM.appendChild(buttonRemoveDOM);
@@ -27,18 +29,31 @@ function displayProduct() {
     });
 }
 
-document.getElementById('createProduct').addEventListener('submit', function (event) {
+document.getElementById('createProduct').addEventListener('submit', async function (event) {
     event.preventDefault();
     const formData = new FormData(this);
-    const products = new Product(
+    const product = new Product(
         formData.get('productName'),
         formData.get('amount'),
         formData.get('price')
     )
-    postProductToApi(products, productsAPI).then(() => {
-        location.reload();
-    })
+    let productExisted = isProductExisted(product.productName)
+    if (productExisted) {
+        window.alert(`${productExisted.productName}, is existed, please try agian`);
+        return;
+    }
+    else {
+        const updatedProduct = await createProduct(product);
+        if (updatedProduct) {
+            location.reload();
+            productExisted = updatedProduct
+        }
+    }
 })
+
+function isProductExisted(productNameDOM) {
+    return listProduct.find((products) => products.productName == productNameDOM)
+}
 function postValueToParam(productID, product) {
     const productString = encodeURIComponent(JSON.stringify(product));
     const productValue = `../editPage/editPage.html?productID=${productID}&productValue=${productString}`;

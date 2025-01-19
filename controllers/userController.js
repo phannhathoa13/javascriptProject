@@ -44,20 +44,4 @@ async function removeAccount(userID, api) {
     }
 }
 
-async function editProductInCartUser(userLogedInID, productNameDOM, newValue) {
-    try {
-        const reponse = await fetch(`${userApiURL}/${userLogedInID}?productList&productName=&${productNameDOM}`, {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                productList: newValue
-            })
-        })
-        return await reponse.json();
-    } catch (error) {
-        console.error(`edit product error: ${error}`);
-    }
-}
-export { fetchUserAPI, editProductInCartUser, removeAccount, registerAccountUser };
+export { fetchUserAPI, removeAccount, registerAccountUser };

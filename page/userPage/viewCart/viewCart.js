@@ -1,83 +1,103 @@
 
-import { fetchCartFromApi, updateProductInApi } from "../../../controllers/cartControllers.js";
-import { fetchProductAPI, updateNewProductValueToApi } from "../../../controllers/productControllers.js";
+import { fetchCartFromUserLogedIn, updateNewValueInUserCart } from "../../../controllers/cartControllers.js";
+import { deleteProductInAPI, fetchProductAPI, updateNewProductValueToApi } from "../../../controllers/productControllers.js";
+import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import { getValueInQuerryParam, postCartIdAndValueToParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
 
-const cartList = await fetchCartFromApi();
 const listProduct = await fetchProductAPI()
 const getValueInParam = getValueInQuerryParam('cartID');
-let userLogedIn = isUserLogedIn();
+let userLogedIn = await fetchCartFromUserLogedIn(getValueInParam);
 showListProductInCartUser();
-function showListProductInCartUser() {
-    const listProductInCart = document.getElementById('listProductInCart');
-    userLogedIn.products.forEach(product_ => {
-        const productDOM = document.createElement("div")
-        const buttonRemoveDOM = document.createElement("button");
-        const buttonEditDOM = document.createElement("button");
-        productDOM.textContent = `product name: ${product_.productName}, amount: ${product_.amount}, price: $${product_.price} `
-        buttonRemoveDOM.textContent = "Remove";
-        buttonEditDOM.textContent = "Edit";
-        buttonEditDOM.onclick = () => {
-            editProductInCart(product_);
-        }
-        buttonRemoveDOM.onclick = () => {
-            productDOM.remove();
-            removeProduct(product_.productName);
-        }
-        productDOM.appendChild(buttonEditDOM);
-        productDOM.appendChild(buttonRemoveDOM);
-        listProductInCart.appendChild(productDOM);
-    });
+async function showListProductInCartUser() {
+    try {
+        showLoading('loadingScreen');
+        const listProductDOM = document.getElementById('listProductInCart');
+        userLogedIn.products.forEach(product_ => {
+            const productDOM = document.createElement("div")
+            const buttonRemoveDOM = document.createElement("button");
+            const buttonEditDOM = document.createElement("button");
+            productDOM.textContent = `product name: ${product_.productName}, amount: ${product_.amount}, price: $${product_.price} `
+            buttonRemoveDOM.textContent = "Remove";
+            buttonEditDOM.textContent = "Edit";
+            buttonEditDOM.onclick = () => {
+                editProductInCart(product_);
+            }
+            buttonRemoveDOM.onclick = () => {
+                productDOM.remove();
+                removeProduct(product_.productName);
+            }
+            productDOM.appendChild(buttonEditDOM);
+            productDOM.appendChild(buttonRemoveDOM);
+            listProductDOM.appendChild(productDOM);
+        });
+    } catch (error) {
+        console.log("show list product in cart user is erorr", error);
+    }
+    finally {
+        hideLoading('loadingScreen');
+    }
 }
 
 async function removeProduct(productNameDOM) {
     try {
+        showLoading('loadingScreen');
         const filterProductExisted = userLogedIn.products.filter((products_) => products_.productName !== productNameDOM);
         const updatedTotalPrice = filterProductExisted.reduce((total, product) => total + product.price * product.amount, 0);
-        const updatedCart = await updateProductInApi(userLogedIn.cartID, userLogedIn, filterProductExisted, updatedTotalPrice);
+        const updatedCart = await updateNewValueInUserCart(userLogedIn.cartID, userLogedIn, filterProductExisted, updatedTotalPrice);
         if (updatedCart) {
             userLogedIn = updatedCart
         }
     } catch (error) {
         console.error(`Delete error: ${error}`);
     }
+    finally {
+        window.alert("remove successed");
+        hideLoading('loadingScreen');
+    }
 }
 
 window.payment = async function payment() {
-    
-    const changeProduct = listProduct.map((products) => {
-        const productInCart = isProductOnCartInUser(products.productName);
-        if (productInCart) {
-            return {
-                ...products,
-                amount: products.amount - productInCart.amount,
+    try {
+        showLoading('loadingScreen');
+        const changeProduct = listProduct
+            .filter((products) => {
+                const productInCart = isProductExistedOnCartInUser(products.productName);
+                return !!productInCart;
+            })
+            .map((products) => {
+                const productInCart = isProductExistedOnCartInUser(products.productName);
+                if (productInCart) {
+                    return {
+                        ...products,
+                        amount: products.amount - productInCart.amount,
+                    }
+                }
+                return products
+            })
+
+        const changeProductPromise = changeProduct.map((product) => {
+            if (product.amount == 0) {
+                deleteProductInAPI(product.id)
             }
-        }
-        return products
-    })
-
-    const changeProductPromise = changeProduct.map((product) =>{
-        return updateNewProductValueToApi(product.id, product)
-    })
-
-    await Promise.all(changeProductPromise);
-
-    for (let index = 0; index < listProduct.length; index++) {
-        const productItem = listProduct[index];
-        const updatedItem = changeProduct.find((product) => {
-           return product.id == productItem.id
+            return updateNewProductValueToApi(product.id, product)
         })
-        if (updatedItem) {
-            productItem.amount = updatedItem.amount
+
+        await Promise.all(changeProductPromise);
+
+        const updatedListCart = await updateNewValueInUserCart(userLogedIn.cartID, userLogedIn, [], 0);
+        if (updatedListCart) {
+            userLogedIn = updatedListCart;
+            window.alert("Payment successed");
+            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
         }
+    } catch (error) {
+        console.log("payment erorr", error);
     }
-    
-    const updatedListCart = await updateProductInApi(userLogedIn.cartID, userLogedIn, [], 0);
-    if (updatedListCart) {
-        userLogedIn = updatedListCart;
+    finally {
+        hideLoading('loadingScreen');
     }
-    // window.alert("Payment successed");
-    // window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
+
+
 }
 
 window.negativeToShoppingCart = function negativeToShoppingCart() {
@@ -88,10 +108,6 @@ function editProductInCart(productDOM) {
     window.location.href = `../editProductInCart/editProductInCart.html${postCartIdAndValueToParam(userLogedIn.cartID, productDOM)}`
 }
 
-function isProductOnCartInUser(productNameOnCart) {
+function isProductExistedOnCartInUser(productNameOnCart) {
     return userLogedIn.products.find((product) => product.productName == productNameOnCart)
-}
-
-function isUserLogedIn() {
-    return cartList.find((cart) => cart.cartID == getValueInParam);
 }

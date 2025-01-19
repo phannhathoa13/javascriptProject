@@ -4,10 +4,10 @@ async function fetchProductAPI() {
         const reponse = await fetch(productApiURL);
         return await reponse.json()
     } catch (error) {
-        console.error(`Fetch error: ${error}`);
+        console.error(`Fetch list Product error : ${error}`);
     }
 }
-async function postProductToApi(product) {
+async function createProduct(product) {
     try {
         const reponse = await fetch(productApiURL, {
             method: "POST",
@@ -23,7 +23,7 @@ async function postProductToApi(product) {
         return await reponse.json();
 
     } catch (error) {
-        console.error(`Post error: `, error);
+        console.error(`Create product error: `, error);
     }
 }
 async function updateNewProductValueToApi(productID, product) {
@@ -42,12 +42,12 @@ async function updateNewProductValueToApi(productID, product) {
         return await reponse.json();
 
     } catch (error) {
-        console.error(`Post error: `, error);
+        console.error(`new product value is error: `, error);
     }
 }
-async function deleteProductInAPI(productID, api) {
+async function deleteProductInAPI(productID) {
     try {
-        const reponse = await fetch(`${api}/${productID}`, {
+        const reponse = await fetch(`${productApiURL}/${productID}`, {
             method: "DELETE",
             headers: {
                 'Content-Type': 'application/json'
@@ -55,7 +55,7 @@ async function deleteProductInAPI(productID, api) {
         })
         return await reponse.json();
     } catch (error) {
-        console.error(`Delete error: ${error}`);
+        console.error(`Delete product error: ${error}`);
     }
 }
-export { fetchProductAPI, postProductToApi, updateNewProductValueToApi, deleteProductInAPI }
+export { fetchProductAPI, createProduct, updateNewProductValueToApi, deleteProductInAPI }
