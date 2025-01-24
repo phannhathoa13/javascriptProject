@@ -1,7 +1,8 @@
-
 import { fetchCartFromUserLogedIn, updateNewValueInUserCart } from "../../../controllers/cartControllers.js";
+import { createOrder } from "../../../controllers/orderControllers.js";
 import { deleteProductInAPI, fetchProductAPI, updateNewProductValueToApi } from "../../../controllers/productControllers.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
+import Order from "../../../models/order.js";
 import { getValueInQuerryParam, postCartIdAndValueToParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
 
 const listProduct = await fetchProductAPI()
@@ -12,6 +13,9 @@ async function showListProductInCartUser() {
     try {
         showLoading('loadingScreen');
         const listProductDOM = document.getElementById('listProductInCart');
+        if (userLogedIn.products.length == 0) {
+            window.alert("Your cart is empty");
+        }
         userLogedIn.products.forEach(product_ => {
             const productDOM = document.createElement("div")
             const buttonRemoveDOM = document.createElement("button");
@@ -74,30 +78,25 @@ window.payment = async function payment() {
                 }
                 return products
             })
-
         const changeProductPromise = changeProduct.map((product) => {
             if (product.amount == 0) {
                 deleteProductInAPI(product.id)
             }
             return updateNewProductValueToApi(product.id, product)
         })
-
         await Promise.all(changeProductPromise);
 
-        const updatedListCart = await updateNewValueInUserCart(userLogedIn.cartID, userLogedIn, [], 0);
-        if (updatedListCart) {
-            userLogedIn = updatedListCart;
-            window.alert("Payment successed");
-            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
-        }
+        await transferProductAndUserToOrderHistory(userLogedIn.products);
+
+        await updateNewValueInUserCart(userLogedIn.cartID, userLogedIn, [], 0);
+        window.alert("Payment successed");
+        window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
     } catch (error) {
         console.log("payment erorr", error);
     }
     finally {
         hideLoading('loadingScreen');
     }
-
-
 }
 
 window.negativeToShoppingCart = function negativeToShoppingCart() {
@@ -110,4 +109,22 @@ function editProductInCart(productDOM) {
 
 function isProductExistedOnCartInUser(productNameOnCart) {
     return userLogedIn.products.find((product) => product.productName == productNameOnCart)
+}
+
+async function transferProductAndUserToOrderHistory(cartInUser) {
+    const createAt = new Date().toDateString();
+
+    const totalPrice = cartInUser.reduce((acc, product) => {
+        return acc + product.amount * product.price;
+    }, 0)
+
+    const order = new Order(
+        userLogedIn.user,
+        cartInUser,
+        totalPrice,
+        "Paid",
+        createAt
+    )
+    const response = await createOrder(order);
+    return response
 }

@@ -54,8 +54,6 @@ document.getElementById('createProduct').addEventListener('submit', async functi
 function isProductExisted(productNameDOM) {
     return listProduct.find((products) => products.productName == productNameDOM)
 }
-function postValueToParam(productID, product) {
-    const productString = encodeURIComponent(JSON.stringify(product));
-    const productValue = `../editPage/editPage.html?productID=${productID}&productValue=${productString}`;
-    return productValue;
+window.viewOrder = function viewOrder() {
+    window.location.href = "../orderManager/orderManager.html"
 }

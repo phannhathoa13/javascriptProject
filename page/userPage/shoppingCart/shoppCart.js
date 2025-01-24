@@ -90,6 +90,10 @@ async function addToCart(nameProductDOM, priceProductDOM) {
     }
 }
 
+window.orderHistory = function orderHistory() {
+    window.location.href = `../orderHistory/orderHistory.html${postCartIDToParam(userLogedIn.cartID)}`
+}
+
 window.viewCart = function viewCart() {
     window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`
 }

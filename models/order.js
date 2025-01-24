@@ -1,10 +1,10 @@
 class Order {
-    constructor(orderID, status, totalAmount, orderDate, products) {
-        this.orderID = orderID;
+    constructor(user, cartList, totalPrice, status, createdAt) {
+        this.user = user;
+        this.cartList = cartList;
+        this.totalPrice = totalPrice
         this.status = status;
-        this.totalAmount = totalAmount;
-        this.orderDate = orderDate;
-        this.products = products;
+        this.createdAt = createdAt;
     }
 }
 export default Order
