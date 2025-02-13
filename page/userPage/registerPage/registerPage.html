@@ -11,19 +11,19 @@
 <body>
     <form id="form" novalidate>
         <label for="username">username</label><br>
-        <input type="text" id="username" name="username"><br>
+        <input type="text" id="username" name="username" onchange="validateUsername(event)"><br>
         <div id="usernameWarning"></div>
 
         <label for="pwd">password</label><br>
-        <input type="password" id="pwd" name="pwd"><br>
+        <input type="password" id="pwd" name="pwd" onchange="validatePassword(event)"><br>
         <div id="passwordWarning"></div>
 
         <label for="pwd">confirm password</label><br>
-        <input type="password" id="cfpwd" name="cfpwd"><br>
+        <input type="password" id="cfpwd" name="cfpwd" onchange="validateConfirmPassword(event)"><br>
         <div id="cfpwdWarning"></div>
 
         <label for="email">email</label><br>
-        <input type="text" id="email" name="email"><br>
+        <input type="text" id="email" name="email" onchange="validateEmail(event)"><br>
         <div id="emailWarning"></div>
 
 
