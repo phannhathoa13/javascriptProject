@@ -1,6 +1,6 @@
-import { fetchCartFromUserLogedIn, updateNewValueInUserCart } from "../../../controllers/cartControllers.js";
+import { fetchCartFromUserLogedIn, updateCartInAccount } from "../../../controllers/cartControllers.js";
 import { createOrder } from "../../../controllers/orderControllers.js";
-import { deleteProductInAPI, fetchProductAPI, updateNewProductValueToApi } from "../../../controllers/productControllers.js";
+import { deleteProductInAPI, fetchProductAPI } from "../../../controllers/productControllers.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import Order from "../../../models/order.js";
 import { getValueInQuerryParam, postCartIdAndValueToParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
@@ -15,6 +15,7 @@ async function showListProductInCartUser() {
         const listProductDOM = document.getElementById('listProductInCart');
         if (userLogedIn.products.length == 0) {
             window.alert("Your cart is empty");
+            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
         }
         userLogedIn.products.forEach(product_ => {
             const productDOM = document.createElement("div")
@@ -47,17 +48,19 @@ async function removeProduct(productNameDOM) {
         showLoading('loadingScreen');
         const filterProductExisted = userLogedIn.products.filter((products_) => products_.productName !== productNameDOM);
         const updatedTotalPrice = filterProductExisted.reduce((total, product) => total + product.price * product.amount, 0);
-        const updatedCart = await updateNewValueInUserCart(userLogedIn.cartID, userLogedIn, filterProductExisted, updatedTotalPrice);
+        const updatedCart = await updateCartInAccount(userLogedIn.cartID, userLogedIn, filterProductExisted, updatedTotalPrice);
         if (updatedCart) {
             userLogedIn = updatedCart
         }
-    } catch (error) {
+        hideLoading('loadingScreen');
+    }
+    catch (error) {
         console.error(`Delete error: ${error}`);
     }
     finally {
         window.alert("remove successed");
-        hideLoading('loadingScreen');
     }
+
 }
 
 window.payment = async function payment() {
@@ -82,13 +85,13 @@ window.payment = async function payment() {
             if (product.amount == 0) {
                 deleteProductInAPI(product.id)
             }
-            return updateNewProductValueToApi(product.id, product)
+            return updateCartInAccount(product.id, product)
         })
         await Promise.all(changeProductPromise);
 
         await transferProductAndUserToOrderHistory(userLogedIn.products);
 
-        await updateNewValueInUserCart(userLogedIn.cartID, userLogedIn, [], 0);
+        await updateCartInAccount(userLogedIn.cartID, userLogedIn, [], 0);
         window.alert("Payment successed");
         window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
     } catch (error) {

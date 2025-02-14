@@ -60,7 +60,7 @@ async function addProductToCartContainerUser(cartID, cartValue) {
 }
 
 
-async function updateNewValueInUserCart(cartID, userLogedIn, updatedProduct, updatedTotalPrice) {
+async function updateCartInAccount(cartID, userLogedIn, updatedProduct, updatedTotalPrice) {
     try {
         const reponse = await fetch(`${cartApiUrl}/${cartID}`, {
             method: "PUT",
@@ -81,4 +81,4 @@ async function updateNewValueInUserCart(cartID, userLogedIn, updatedProduct, upd
         console.log(`update new Value In User Cart error:`, error);
     }
 }
-export { registerCartUser, fetchCartFromUserLogedIn, addProductToCartContainerUser, fetchCartFromApi, updateNewValueInUserCart }
+export { registerCartUser, fetchCartFromUserLogedIn, addProductToCartContainerUser, fetchCartFromApi, updateCartInAccount }

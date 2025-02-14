@@ -1,5 +1,5 @@
 
-import { fetchCartFromApi, updateProductInApi } from "../../../controllers/cartControllers.js";
+import { fetchCartFromApi, updateCartInAccount } from "../../../controllers/cartControllers.js";
 import { fetchProductAPI } from "../../../controllers/productControllers.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
 
@@ -53,7 +53,7 @@ document.getElementById('editValue').addEventListener('submit', async function (
 
     })
     const updatedTotalPrice = updatedProduct.reduce((total, product) => total + product.price * product.amount, 0);
-    const updatedCartUser = await updateProductInApi(userLogedIn.cartID, userLogedIn, updatedProduct, updatedTotalPrice);
+    const updatedCartUser = await updateCartInAccount(userLogedIn.cartID, userLogedIn, updatedProduct, updatedTotalPrice);
     if (updatedCartUser) {
         userLogedIn = updatedCartUser
         window.alert("edit successed");
