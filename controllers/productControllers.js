@@ -26,7 +26,7 @@ async function createProduct(product) {
         console.error(`Create product error: `, error);
     }
 }
-async function updateNewProductValueToApi(productID, product) {
+async function updateProduct(productID, product) {
     try {
         const reponse = await fetch(`${productApiURL}/${productID}`, {
             method: "PUT",
@@ -45,7 +45,7 @@ async function updateNewProductValueToApi(productID, product) {
         console.error(`new product value is error: `, error);
     }
 }
-async function deleteProductInAPI(productID) {
+async function deleteProduct$(productID) {
     try {
         const reponse = await fetch(`${productApiURL}/${productID}`, {
             method: "DELETE",
@@ -58,4 +58,4 @@ async function deleteProductInAPI(productID) {
         console.error(`Delete product error: ${error}`);
     }
 }
-export { fetchProductAPI, createProduct, updateNewProductValueToApi, deleteProductInAPI }
+export { fetchProductAPI, createProduct, updateProduct, deleteProduct$ }

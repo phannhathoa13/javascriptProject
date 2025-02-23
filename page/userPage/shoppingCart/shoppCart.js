@@ -1,5 +1,5 @@
-import { addProductToCartContainerUser, fetchCartFromUserLogedIn } from "../../../controllers/cartControllers.js";
-import { fetchProductAPI } from "../../../controllers/productControllers.js";
+import { addProductToCartId, fetchCartFromUserLogedIn } from "../../../controllers/cartControllers.js";
+import { deleteProduct$, fetchProductAPI } from "../../../controllers/productControllers.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import Cart from "../../../models/cartModels.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
@@ -21,11 +21,12 @@ async function displayListProduct() {
             productsDOM.textContent = `${products.productName}, amount: ${products.amount}, price: ${products.price}`;
             buttonAddToCart.textContent = "ADD";
             buttonAddToCart.onclick = () => {
-                addToCart(products.productName, parseFloat(products.price));
+                addToCart(products.productName, parseFloat(products.price), products.amount);
             }
             productsDOM.appendChild(buttonAddToCart);
-            if (products.amount < 0 && products.amount == 0) {
-                productsDOM.remove()
+            if (products.amount == 0) {
+                productsDOM.remove();
+                deleteProduct$(products.id);
             }
             else {
                 listProductDOM.appendChild(productsDOM);
@@ -40,15 +41,21 @@ async function displayListProduct() {
 }
 
 
-async function addToCart(nameProductDOM, priceProductDOM) {
+async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM) {
     try {
         showLoading('loadingScreen');
         const createAt = new Date();
         if (userLogedIn && userLogedIn.products && userLogedIn.products.length > 0) {
-            const product = userLogedIn.products.find((product_) => product_.productName == nameProductDOM);
+            const product = isProductExistedInCart(nameProductDOM);
             if (product) {
-                product.amount += 1;
-                userLogedIn.totalPrice += product.price;
+                if (product.amount == amountProductDOM) {
+                    window.alert("You reach to limited amount of product");
+                    return;
+                }
+                else {
+                    product.amount += 1;
+                    userLogedIn.totalPrice += product.price;
+                }
             }
             else {
                 userLogedIn.products.push({
@@ -57,7 +64,7 @@ async function addToCart(nameProductDOM, priceProductDOM) {
                     price: priceProductDOM,
                 });
             };
-            const updatedCart = await addProductToCartContainerUser(getUserIDInParam, userLogedIn)
+            const updatedCart = await addProductToCartId(getUserIDInParam, userLogedIn)
             if (updatedCart) {
                 userLogedIn = updatedCart
             }
@@ -74,7 +81,7 @@ async function addToCart(nameProductDOM, priceProductDOM) {
             })
             cartValue.totalPrice += priceProductDOM;
 
-            const updatedCart = await addProductToCartContainerUser(getUserIDInParam, cartValue);
+            const updatedCart = await addProductToCartId(getUserIDInParam, cartValue);
             if (updatedCart) {
                 userLogedIn = updatedCart
             }
@@ -88,6 +95,10 @@ async function addToCart(nameProductDOM, priceProductDOM) {
     finally {
         hideLoading('loadingScreen');
     }
+}
+
+function isProductExistedInCart(nameProductDOM) {
+    return userLogedIn.products.find((product_) => product_.productName == nameProductDOM);
 }
 
 window.orderHistory = function orderHistory() {

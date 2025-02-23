@@ -38,7 +38,7 @@ async function registerCartUser(userLogedin) {
     }
 }
 
-async function addProductToCartContainerUser(cartID, cartValue) {
+async function addProductToCartId(cartID, cartValue) {
     try {
         const reponse = await fetch(`${cartApiUrl}/${cartID}`, {
             method: "PUT",
@@ -73,7 +73,6 @@ async function updateCartInAccount(cartID, userLogedIn, updatedProduct, updatedT
                 totalPrice: updatedTotalPrice,
                 createdAt: userLogedIn.createdAt,
                 cartID: userLogedIn.cartID
-                ,
             })
         })
         return await reponse.json();
@@ -81,4 +80,4 @@ async function updateCartInAccount(cartID, userLogedIn, updatedProduct, updatedT
         console.log(`update new Value In User Cart error:`, error);
     }
 }
-export { registerCartUser, fetchCartFromUserLogedIn, addProductToCartContainerUser, fetchCartFromApi, updateCartInAccount }
+export { registerCartUser, fetchCartFromUserLogedIn, addProductToCartId, fetchCartFromApi, updateCartInAccount }

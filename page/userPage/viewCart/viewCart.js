@@ -1,11 +1,11 @@
 import { fetchCartFromUserLogedIn, updateCartInAccount } from "../../../controllers/cartControllers.js";
 import { createOrder } from "../../../controllers/orderControllers.js";
-import { deleteProductInAPI, fetchProductAPI } from "../../../controllers/productControllers.js";
+import { fetchProductAPI, updateProduct } from "../../../controllers/productControllers.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import Order from "../../../models/order.js";
 import { getValueInQuerryParam, postCartIdAndValueToParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
 
-const listProduct = await fetchProductAPI()
+const listProduct = await fetchProductAPI();
 const getValueInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getValueInParam);
 showListProductInCartUser();
@@ -52,54 +52,73 @@ async function removeProduct(productNameDOM) {
         if (updatedCart) {
             userLogedIn = updatedCart
         }
+
         hideLoading('loadingScreen');
     }
     catch (error) {
         console.error(`Delete error: ${error}`);
     }
     finally {
-        window.alert("remove successed");
+        if (userLogedIn.products.length == 0) {
+            setTimeout(() => {
+                window.alert("Your cart is empty");
+                window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
+            }, 100);
+        }
+        else {
+            displayWindowAlert("Remove sucessed");
+        }
     }
+}
 
+function displayWindowAlert(string) {
+    setTimeout(() => {
+        window.alert(string)
+    }, 100);
 }
 
 window.payment = async function payment() {
     try {
         showLoading('loadingScreen');
-        const changeProduct = listProduct
-            .filter((products) => {
-                const productInCart = isProductExistedOnCartInUser(products.productName);
-                return !!productInCart;
-            })
-            .map((products) => {
-                const productInCart = isProductExistedOnCartInUser(products.productName);
-                if (productInCart) {
-                    return {
-                        ...products,
-                        amount: products.amount - productInCart.amount,
-                    }
+        const orderHistory = createOrderAfterPayment();
+        for (const productsInCart of userLogedIn.products) {
+            const productExisted = getProductInStock(productsInCart.productName)
+            if (productExisted) {
+                const newProductValue = {
+                    ...productExisted,
+                    amount: productExisted.amount - productsInCart.amount
                 }
-                return products
-            })
-        const changeProductPromise = changeProduct.map((product) => {
-            if (product.amount == 0) {
-                deleteProductInAPI(product.id)
+                await updateProduct(newProductValue.id, newProductValue);
             }
-            return updateCartInAccount(product.id, product)
-        })
-        await Promise.all(changeProductPromise);
-
-        await transferProductAndUserToOrderHistory(userLogedIn.products);
-
+        }
+        await createOrder(orderHistory);
         await updateCartInAccount(userLogedIn.cartID, userLogedIn, [], 0);
-        window.alert("Payment successed");
-        window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
+        hideLoading('loadingScreen');
     } catch (error) {
-        console.log("payment erorr", error);
+        console.log("payment error: ", error);
     }
     finally {
-        hideLoading('loadingScreen');
+        setTimeout(() => {
+            window.alert("Payment successed");
+            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
+        }, 100);
     }
+}
+
+function getProductInStock(productInCart) {
+    return listProduct.find((products) => products.productName == productInCart);
+}
+
+function createOrderAfterPayment() {
+    const createAt = new Date().toDateString();
+    const orderHistory = new Order(
+        userLogedIn.user,
+        userLogedIn.products,
+        userLogedIn.totalPrice,
+        "PAID",
+        createAt
+    )
+    return orderHistory
 }
 
 window.negativeToShoppingCart = function negativeToShoppingCart() {
@@ -108,26 +127,4 @@ window.negativeToShoppingCart = function negativeToShoppingCart() {
 
 function editProductInCart(productDOM) {
     window.location.href = `../editProductInCart/editProductInCart.html${postCartIdAndValueToParam(userLogedIn.cartID, productDOM)}`
-}
-
-function isProductExistedOnCartInUser(productNameOnCart) {
-    return userLogedIn.products.find((product) => product.productName == productNameOnCart)
-}
-
-async function transferProductAndUserToOrderHistory(cartInUser) {
-    const createAt = new Date().toDateString();
-
-    const totalPrice = cartInUser.reduce((acc, product) => {
-        return acc + product.amount * product.price;
-    }, 0)
-
-    const order = new Order(
-        userLogedIn.user,
-        cartInUser,
-        totalPrice,
-        "Paid",
-        createAt
-    )
-    const response = await createOrder(order);
-    return response
 }

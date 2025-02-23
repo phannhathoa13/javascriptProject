@@ -134,15 +134,16 @@ function updateButtonRegister() {
         registerButton.disabled = false;
     }
 }
-document.getElementById('form').addEventListener('submit', function (event) {
+document.getElementById('form').addEventListener('submit', async function (event) {
     event.preventDefault();
     const formData = new FormData(this);
-    registerAccount(formData);
+    await registerAccount(formData);
     window.alert("register susceed");
     window.location.href = "../loginPage/loginPage.html";
+
 })
 
-function registerAccount(formData) {
+async function registerAccount(formData) {
     const createdAt = new Date().toDateString();
     const user = new User(
         formData.get('username'),
@@ -155,6 +156,10 @@ function registerAccount(formData) {
         user,
         createdAt
     )
-    registerAccountUser(user);
-    registerCartUser(cart);
+    await registerAccountUser(user);
+    await registerCartUser(cart);
+}
+
+window.goLogin = function goLogin() {
+    window.location.href = "../loginPage/loginPage.html";
 }

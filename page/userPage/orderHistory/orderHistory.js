@@ -1,5 +1,6 @@
 import { fetchCartFromUserLogedIn } from "../../../controllers/cartControllers.js";
 import { fetchListOrder } from "../../../controllers/orderControllers.js";
+import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
 
 const getuserId = getValueInQuerryParam('cartID');
@@ -9,41 +10,40 @@ let totalPrice = 0;
 displayOrderHistory();
 function displayOrderHistory() {
     try {
-        const listProductFather = document.getElementById('listProductInCart');
-        const username = userLogedIn.user.username
-        const ordersByUser = getOrderWithHistory(username);
-
-        if (isUserCartEmpty(ordersByUser) == "empty") {
+        showLoading('loadingScreen');
+        const listProductInCartDOM = document.getElementById('listProductInCart');
+        const orderHistory = getOrderHistory();
+        if (orderHistory.length == 0) {
+            hideLoading('loadingScreen');
             window.alert("You don't have any order history");
-            return;
+            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
         }
-        ordersByUser.forEach(({ products, paymentTime }) => {
-            const productsDOM = document.createElement("div");
-            productsDOM.textContent = `payment time: ${paymentTime} - ${products.productName}, amount: ${products.amount}, price: ${products.price}`;
-            totalPrice += products.amount * products.price;
-            listProductFather.appendChild(productsDOM);
-            document.getElementById('totalprice').innerHTML = `You've been paid: ${totalPrice} $`;
-        });
+        else {
+            orderHistory.forEach((orderByUser) => {
+                orderByUser.cartList.forEach((product) => {
+                    const createdAtDOM = document.createElement("div");
+                    const productDOM = document.createElement("div");
+                    createdAtDOM.textContent = `${orderByUser.createdAt}`;
+                    productDOM.textContent = `${createdAtDOM.textContent} productName: ${product.productName}, amount: ${product.amount}, price: ${orderByUser.totalPrice}`;
+                    listProductInCartDOM.appendChild(productDOM);
+                })
+            });
+        }
     } catch (error) {
-        console.log(`Display order History error`, error);
+        console.log("display order history get errror", error);
+    } finally {
+        hideLoading('loadingScreen');
     }
+
 }
 
-function getOrderWithHistory(usernameByUser) {
-    return orderList
-        .filter((users) => users.user.username == usernameByUser)
-        .flatMap(order =>
-            order.cartList.map((products) => ({
-                products,
-                paymentTime: order.createdAt
-            }))
-        )
+function getOrderHistory() {
+    const usernameByUserLoggedIn = userLogedIn.user.username;
+    return orderList.filter((order) => order.user.username == usernameByUserLoggedIn);
 }
+
 
 window.back = function back() {
     window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(getuserId)}`;
 }
 
-function isUserCartEmpty(ordersByUser) {
-    return ordersByUser.length == 0 ? "empty" : null
-}
