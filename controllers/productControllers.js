@@ -17,7 +17,8 @@ async function createProduct(product) {
             body: JSON.stringify({
                 productName: product.productName,
                 amount: product.amount,
-                price: product.price
+                price: product.price,
+                imageProduct: product.imageProduct,
             })
         });
         return await reponse.json();
@@ -36,7 +37,8 @@ async function updateProduct(productID, product) {
             body: JSON.stringify({
                 productName: product.productName,
                 amount: product.amount,
-                price: product.price
+                price: product.price,
+                imageProduct: product.imageProduct,
             })
         });
         return await reponse.json();

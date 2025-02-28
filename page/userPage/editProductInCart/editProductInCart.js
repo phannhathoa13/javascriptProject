@@ -18,12 +18,29 @@ displayValueOfProduct();
 function displayValueOfProduct() {
     try {
         showLoading('loadingScreen');
+
+        const imageProductDOM = document.getElementById('previewImg');
+        imageProductDOM.src = valueInParam.imageProduct;
+
         const productNameInput = document.getElementById('productName');
-        const amountInput = document.getElementById('amount');
-        const priceInPut = document.getElementById('price');
         productNameInput.value = valueInParam.productName;
+        productNameInput.style.position = "relative";
+        productNameInput.style.bottom = "24px";
+
+        const amountInput = document.getElementById('amount');
         amountInput.value = valueInParam.amount;
+        amountInput.style.position = "relative";
+        amountInput.style.bottom = "24px";
+
+        const priceInPut = document.getElementById('price');
         priceInPut.value = valueInParam.price;
+        priceInPut.style.position = "relative";
+        priceInPut.style.bottom = "24px";
+
+        const buttonSaveDOM = document.getElementById('buttonSave');
+        buttonSaveDOM.style.position = "relative";
+        buttonSaveDOM.style.bottom = "24px";
+
     }
     catch (error) {
         console.log("Display value of Product In Edit error", error);
@@ -35,15 +52,12 @@ function displayValueOfProduct() {
 
 window.save = async function save() {
     try {
-
         const updatedAndValidatedCart = validationAmountProduct();
 
         if (isAmountAvaiable) {
             const updateTotalPrice = updatedAndValidatedCart.reduce((total, products) => total + products.amount * products.price, 0)
-            const updatedCartPromise = await updateCartInAccount(userLogedIn.cartID, userLogedIn, updatedAndValidatedCart, updateTotalPrice);
-            if (updatedCartPromise) {
-                window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`;
-            }
+            await updateCartInAccount(userLogedIn.cartID, userLogedIn, updatedAndValidatedCart, updateTotalPrice);
+            window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`;
         }
 
     } catch (error) {
@@ -56,7 +70,7 @@ function validationAmountProduct() {
     const amountValue = document.getElementById('amount').value;
     return userLogedIn.products.map((products) => {
         if (products.productName == productNameInput) {
-            const productExisted = isProductExistedInListProduct(products.productName);
+            const productExisted = getProductExistedInListProduct(products.productName);
             if (!productExisted) {
                 isAmountAvaiable = false;
                 window.alert("The product is not existed");
@@ -84,10 +98,9 @@ function validationAmountProduct() {
 }
 
 
-function isProductExistedInListProduct(productInCart) {
+function getProductExistedInListProduct(productInCart) {
     return listProduct.find((product) => product.productName == productInCart)
 }
-
 
 function isUserLogedIn() {
     const getCartID = getValueInQuerryParam('cartID');

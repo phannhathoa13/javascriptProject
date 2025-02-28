@@ -5,28 +5,33 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../../feautureReuse/loadingScreen.css">
+
     <title>Register</title>
 </head>
 
 <body>
+    <div id="loadingScreen" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
     <form id="form" novalidate>
+        <input type="text" id="codeRoleInPut" name="codeRoleInPut" placeholder="Enter Code"><br>
+
         <label for="username">username</label><br>
-        <input type="text" id="username" name="username" onchange="validateUsername(event)"><br>
+        <input type="text" id="username" name="username" oninput="validateUsername(event)"><br>
         <div id="usernameWarning"></div>
 
         <label for="pwd">password</label><br>
-        <input type="password" id="pwd" name="pwd" onchange="validatePassword(event)"><br>
+        <input type="password" id="pwd" name="pwd" oninput="validatePassword(event)"><br>
         <div id="passwordWarning"></div>
 
         <label for="pwd">confirm password</label><br>
-        <input type="password" id="cfpwd" name="cfpwd" onchange="validateConfirmPassword(event)"><br>
+        <input type="password" id="cfpwd" name="cfpwd" oninput="validateConfirmPassword(event)"><br>
         <div id="cfpwdWarning"></div>
 
         <label for="email">email</label><br>
-        <input type="text" id="email" name="email" onchange="validateEmail(event)"><br>
+        <input type="text" id="email" name="email" oninput="validateEmail(event)"><br>
         <div id="emailWarning"></div>
-
-
         <input type="submit" value="Register" id="register">
     </form>
     <button onclick="goLogin()">Login</button>

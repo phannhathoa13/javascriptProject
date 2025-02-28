@@ -18,22 +18,41 @@ async function showListProductInCartUser() {
             window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
         }
         userLogedIn.products.forEach(product_ => {
-            const productDOM = document.createElement("div")
-            const buttonRemoveDOM = document.createElement("button");
-            const buttonEditDOM = document.createElement("button");
+            const productDivDOM = document.createElement("div");
+            productDivDOM.style.display = "flex";
+            productDivDOM.style.margin = "10px";
+
+            const productDOM = document.createElement("div");
             productDOM.textContent = `product name: ${product_.productName}, amount: ${product_.amount}, price: $${product_.price} `
-            buttonRemoveDOM.textContent = "Remove";
+            productDOM.style.placeContent = "center";
+            productDOM.style.margin = "10px";
+
+            const imageProductDOM = document.createElement("img");
+            imageProductDOM.src = product_.imageProduct;
+            imageProductDOM.style.width = "100px";
+            imageProductDOM.style.height = "60px";
+
+            const buttonEditDOM = document.createElement("button");
             buttonEditDOM.textContent = "Edit";
+            buttonEditDOM.style.margin = "10px";
             buttonEditDOM.onclick = () => {
                 editProductInCart(product_);
             }
+
+            const buttonRemoveDOM = document.createElement("button");
+            buttonRemoveDOM.textContent = "Remove";
+            buttonRemoveDOM.style.margin = "2px";
             buttonRemoveDOM.onclick = () => {
-                productDOM.remove();
+                productDivDOM.remove();
                 removeProduct(product_.productName);
             }
+            
+            listProductDOM.appendChild(productDivDOM);
+            productDivDOM.appendChild(imageProductDOM);
+            productDivDOM.appendChild(productDOM);
             productDOM.appendChild(buttonEditDOM);
             productDOM.appendChild(buttonRemoveDOM);
-            listProductDOM.appendChild(productDOM);
+
         });
     } catch (error) {
         console.log("show list product in cart user is erorr", error);

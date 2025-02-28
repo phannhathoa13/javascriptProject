@@ -29,10 +29,54 @@ async function registerAccountUser(user) {
     }
 }
 
-
-async function removeAccount(userID, api) {
+async function editAccount$(userID,user) {
     try {
-        const reponse = await fetch(`${api}/${userID}/`, {
+        const reponse = await fetch(`${userApiURL}/${userID}`, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: user.username,
+                password: user.password,
+                email: user.email,
+                createdAt: user.createdAt,
+                role: user.role
+            })
+        });
+        return await reponse.json();
+
+    } catch (error) {
+        console.error(`create user account error: `, error);
+    }
+}
+
+async function editRoleAccount$(userID,user,role) {
+    try {
+        const reponse = await fetch(`${userApiURL}/${userID}`, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: user.username,
+                password: user.password,
+                email: user.email,
+                createdAt: user.createdAt,
+                role: role
+            })
+        });
+        return await reponse.json();
+
+    } catch (error) {
+        console.error(`create user account error: `, error);
+    }
+}
+
+
+async function removeAccount(userID) {
+    try {
+        const reponse = await fetch(`${userApiURL}/${userID}/`, {
             method: "DELETE",
             headers: {
                 'Content-Type': 'application/json'
@@ -44,4 +88,6 @@ async function removeAccount(userID, api) {
     }
 }
 
-export { fetchUserAPI, removeAccount, registerAccountUser };
+
+
+export { fetchUserAPI, removeAccount, registerAccountUser, editAccount$, editRoleAccount$ };

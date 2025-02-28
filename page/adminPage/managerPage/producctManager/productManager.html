@@ -2,23 +2,33 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Manager </title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../../../feautureReuse/loadingScreen.css">
+    <link rel="stylesheet" href="../producctManager/productManager.css">
+    <title>Product Manager</title>
 </head>
 
 <body>
-    <div id="listProduct">
-
+    <div class="buttonContainer">
+        <button class="button" onclick="logOut()">Log Out</button>
+        <button class="button" onclick="switchToShoppingPage()">Shopping Page</button>
+    </div>
+    
+    <div id="loadingScreenDOM" class="loading-overlay">
+        <div class="spinner"></div>
     </div>
     <form id="createProduct">
-        <input type="text" name="productName" id="productName" placeholder="product name">
-        <input type="number" name="amount" id="amount" placeholder="amount">
-        <input type="number" name="price" id="price" placeholder="price">
-        <input type="submit" value="Create" id="create">
+        <input type="file" id="fileInput" accept="image/*" onchange="viewImage(event)" />
+        <img src="" id="previewImg" width="100px" />
+        <input type="text" name="productName" id="productName" placeholder="product name" />
+        <input type="number" name="amount" id="amount" placeholder="amount" />
+        <input type="number" name="price" id="price" placeholder="price" />
+        <input type="submit" value="Create" id="create" />
     </form>
-    <button onclick="viewOrder()">View Order</button>
+    
+    <div id="listProduct"></div>
     <script type="module" src="../producctManager/productManager.js"></script>
 </body>
 

@@ -8,20 +8,42 @@ const getListProduct = await fetchProductAPI();
 
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
+const editAccountButtonDOM = document.getElementById('editAccount');
+editAccountButtonDOM.style.display ="none";
+editAccountButtonDOM.style.margin = "5px"
+
+const buttonContainer = document.getElementById('buttonContainer');
+buttonContainer.style.display = "flex";
+
+const editProductsButtonDOM = document.getElementById('editProducts');
+editProductsButtonDOM.style.margin = "5px"
 
 const listProductDOM = document.getElementById('listProduct');
-
+isAdminAccountLogedIn();
+editAccount();
 displayListProduct();
 async function displayListProduct() {
     try {
         showLoading('loadingScreen');
         getListProduct.forEach(products => {
+            const productDivDOM = document.createElement("div");
+            productDivDOM.style.display = "flex";
+
             const productsDOM = document.createElement("div");
+            productsDOM.textContent = `${products.productName}, amount: ${products.amount}, price: ${products.price}$`;
+            productsDOM.style.placeContent = "center";
+
+            const imageProductDOM = document.createElement("img");
+            imageProductDOM.src = products.imageProduct;
+            imageProductDOM.style.width = "100px";
+            imageProductDOM.style.height = "60px";
+            imageProductDOM.style.margin = "10px";
+
             const buttonAddToCart = document.createElement("button");
-            productsDOM.textContent = `${products.productName}, amount: ${products.amount}, price: ${products.price}`;
             buttonAddToCart.textContent = "ADD";
+            buttonAddToCart.style.margin = "10px";
             buttonAddToCart.onclick = () => {
-                addToCart(products.productName, parseFloat(products.price), products.amount);
+                addToCart(products.productName, parseFloat(products.price), products.amount, products.imageProduct);
             }
             productsDOM.appendChild(buttonAddToCart);
             if (products.amount == 0) {
@@ -29,7 +51,9 @@ async function displayListProduct() {
                 deleteProduct$(products.id);
             }
             else {
-                listProductDOM.appendChild(productsDOM);
+                listProductDOM.appendChild(productDivDOM);
+                productDivDOM.appendChild(imageProductDOM);
+                productDivDOM.appendChild(productsDOM);
             }
         });
     } catch (error) {
@@ -40,15 +64,42 @@ async function displayListProduct() {
     }
 }
 
+function editAccount(){
+    const ownerAccount = userLogedIn.user.role;
+    if (ownerAccount == "OWNER") {
+        editAccountButtonDOM.style.display ="block";
+        return;
+    }else {
+        editAccountButtonDOM.style.display ="none";
+        return;
+    }
+}
 
-async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM) {
+
+window.editProducts = function editProducts() {
+    window.location.href =`../../adminPage/managerPage/producctManager/productManager.html${postCartIDToParam(userLogedIn.cartID)}`
+}
+window.editAccountPage = function editAccountPage(){
+    window.location.href = `../../adminPage/managerPage/accountManager/accountManager.html${postCartIDToParam(userLogedIn.cartID)}`;
+}
+function isAdminAccountLogedIn() {
+    const adminAccount = userLogedIn.user.role
+    if (adminAccount == "USERADMIN" || adminAccount == "OWNER") {
+        editProductsButtonDOM.style.display = "block";
+    }
+    else {
+        editProductsButtonDOM.style.display = "none";
+    }
+}
+
+async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM, imageProductDOM) {
     try {
         showLoading('loadingScreen');
         const createAt = new Date();
         if (userLogedIn && userLogedIn.products && userLogedIn.products.length > 0) {
-            const product = isProductExistedInCart(nameProductDOM);
+            const product = productExistedInCart(nameProductDOM);
             if (product) {
-                if (product.amount == amountProductDOM) {
+                if (product.amount >= amountProductDOM) {
                     window.alert("You reach to limited amount of product");
                     return;
                 }
@@ -62,11 +113,14 @@ async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM) {
                     productName: nameProductDOM,
                     amount: 1,
                     price: priceProductDOM,
+                    imageProduct: imageProductDOM
                 });
             };
-            const updatedCart = await addProductToCartId(getUserIDInParam, userLogedIn)
+            console.log(userLogedIn, "Cart VAlue");
+            const updatedCart = await addProductToCartId(getUserIDInParam, userLogedIn);
             if (updatedCart) {
-                userLogedIn = updatedCart
+                userLogedIn = updatedCart;
+                hideLoading('loadingScreen');
             }
         }
         else {
@@ -78,26 +132,24 @@ async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM) {
                 productName: nameProductDOM,
                 amount: 1,
                 price: priceProductDOM,
+                imageProduct: imageProductDOM
             })
             cartValue.totalPrice += priceProductDOM;
-
             const updatedCart = await addProductToCartId(getUserIDInParam, cartValue);
+            console.log(cartValue, "Cart VAlue");
             if (updatedCart) {
-                userLogedIn = updatedCart
-            }
-            else {
-                userLogedIn = cartValue
+                userLogedIn = updatedCart;
+                hideLoading('loadingScreen');
             }
         }
     } catch (error) {
         console.error(error);
     }
-    finally {
-        hideLoading('loadingScreen');
-    }
 }
 
-function isProductExistedInCart(nameProductDOM) {
+
+
+function productExistedInCart(nameProductDOM) {
     return userLogedIn.products.find((product_) => product_.productName == nameProductDOM);
 }
 

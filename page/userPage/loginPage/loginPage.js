@@ -1,28 +1,52 @@
 import { fetchUserAPI } from "../../../controllers/userController.js";
+import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import { postCartIDToParam } from "../../../routes/cartRoutes.js";
 
 const listUser = await fetchUserAPI();
+hideLoading('loadingScreen');
+
 document.getElementById('form').addEventListener('submit', function (event) {
     event.preventDefault();
-
+    showLoading("loadingScreen");
     const usernameInput = document.getElementById('username').value;
     const passwordInput = document.getElementById('pwd').value;
-    if (isAccountHaveAdminRole(usernameInput, passwordInput)) {
-        window.location.href = "../../adminPage/managerPage/producctManager/productManager.html"
-        return;
+
+    const getUserFormApi = getUser(usernameInput, passwordInput);
+
+    if (!usernameInput || !passwordInput) {
+        hideLoading('loadingScreen');
+
+        setTimeout(() => {
+            window.alert("Please input your username and password");
+            return;
+        }, 100);
+
     }
     else if (!isAccountExisted(usernameInput, passwordInput)) {
-        window.alert("wrong account");
-        return;
+        hideLoading('loadingScreen');
+
+        setTimeout(() => {
+            window.alert("wrong account");
+            return;
+        }, 100);
     }
-    else if (!usernameInput || !passwordInput) {
-        window.alert("Please input username and password");
-        return;
+    else if (isAccountHaveRoleUserAdmin(usernameInput, passwordInput) || isAccountHaveRoleOwner(usernameInput, passwordInput)) {
+        hideLoading('loadingScreen');
+
+        setTimeout(() => {
+            window.alert("Login successed");
+            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(parseInt(getUserFormApi.idUser))}`;
+            return;
+        }, 100);
     }
     else {
-        const getUserFormApi = getUser(usernameInput, passwordInput);
-        window.alert("Login successed");
-        window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(parseInt(getUserFormApi.idUser))}`;
+        hideLoading('loadingScreen');
+
+        setTimeout(() => {
+            window.alert("Login successed");
+            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(parseInt(getUserFormApi.idUser))}`;
+            return;
+        }, 100);
     }
 })
 window.negativeToRegiser = function negativeToRegiser() {
@@ -35,6 +59,10 @@ function getUser(usernameInput, passwordInput) {
 function isAccountExisted(usernameInput, passwordInput) {
     return listUser.some((user) => user.username == usernameInput && user.password == passwordInput);
 }
-function isAccountHaveAdminRole(usernameInput, passwordInput) {
-    return listUser.some((user) => user.username == usernameInput && user.password == passwordInput && user.role == "ADMIN");
+function isAccountHaveRoleUserAdmin(usernameInput, passwordInput) {
+    return listUser.some((user) => user.username == usernameInput && user.password == passwordInput && user.role == "USERADMIN");
+}
+
+function isAccountHaveRoleOwner(usernameInput, passwordInput) {
+    return listUser.some((user) => user.username == usernameInput && user.password == passwordInput && user.role == "OWNER");
 }

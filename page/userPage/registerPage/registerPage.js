@@ -1,5 +1,6 @@
 import { registerCartUser } from "../../../controllers/cartControllers.js";
 import { fetchUserAPI, registerAccountUser } from "../../../controllers/userController.js";
+import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import Cart from "../../../models/cartModels.js";
 import User from "../../../models/user.js";
 import { validationEmail, validationPassword, validationUsername } from "../../../validation/loginValidation.js";
@@ -21,6 +22,8 @@ let isUsernameValid = false;
 let isPasswordValid = false;
 let isConfirmPasswordValid = false;
 let isEmailValid = false;
+
+hideLoading('loadingScreen');
 
 function isUsernameExisted(usernameInput) {
     return listUser.some((user) => user.username == usernameInput);
@@ -136,21 +139,51 @@ function updateButtonRegister() {
 }
 document.getElementById('form').addEventListener('submit', async function (event) {
     event.preventDefault();
+    showLoading("loadingScreen");
+    const codeRole = {
+        userADMIN: "USERADMINBABY",
+        OWNER: "OWNERBABY"
+    }
+    const codeRoleInput = document.getElementById('codeRoleInPut').value;
     const formData = new FormData(this);
-    await registerAccount(formData);
-    window.alert("register susceed");
-    window.location.href = "../loginPage/loginPage.html";
+    if (codeRoleInput == "" || codeRoleInput != codeRole.userADMIN && codeRoleInput != codeRole.OWNER) {
+        await registerAccountWithRole(formData,"CUSTOMER");
+        hideLoading('loadingScreen');
+        setTimeout(() => {
+            window.alert("register succeed");
+        window.location.href = "../loginPage/loginPage.html";
+        }, 100);
+    }
+    else if (codeRoleInput == codeRole.userADMIN) {
+        await registerAccountWithRole(formData,"USERADMIN");
 
+        hideLoading('loadingScreen');
+        setTimeout(() => {
+            window.alert("register succeed");
+        window.location.href = "../loginPage/loginPage.html";
+        }, 100);
+    }
+    else if (codeRoleInput == codeRole.OWNER) {
+        await registerAccountWithRole(formData,"OWNER");
+
+        hideLoading('loadingScreen');
+        setTimeout(() => {
+            window.alert("register succeed");
+        window.location.href = "../loginPage/loginPage.html";
+        }, 100);
+    }
 })
 
-async function registerAccount(formData) {
+
+
+async function registerAccountWithRole(formData, role) {
     const createdAt = new Date().toDateString();
     const user = new User(
         formData.get('username'),
         formData.get('pwd'),
         formData.get('email'),
         createdAt,
-        "CUSTOMER"
+        role
     )
     const cart = new Cart(
         user,

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../../feautureReuse/loadingScreen.css">
+    <link rel="stylesheet" href="../orderDetails/orderDetails.css">
+    <title>Order Details</title>
+</head>
+<body>
+    <div id="alertInfor" class="alert">
+        <div class="alert-content">
+            <p>Do You Want To Continue ? </p>
+            <button class="content" onclick="createNewOrder()">Create New Order</button>
+            <button class="content" onclick="addProductsToCart()">Add Products To Cart</button>
+            <button class="content" onclick="cancel()">Cancel</button>
+        </div>
+    </div>
+    <button onclick="back()">Back</button>
+    <div>Order Details</div>
+    <div id="loadingScreen" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    <div id="paidTime"></div>
+    <div id="listOrderHistory"></div>
+    <div class="inforDetailsContainer">
+        <div id="totalPrice"></div>
+    <div id="orderId"></div>
+    </div>
+    <button onclick="reOrder()">ReOrder</button>
+
+    <script type="module" src="../orderDetails/orderDetails.js"></script>
+</body>
+</html>

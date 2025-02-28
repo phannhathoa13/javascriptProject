@@ -6,19 +6,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../../../feautureReuse/loadingScreen.css">
+    <link rel="stylesheet" href="../orderHistory/orderHistory.css">
 
     <title>Order History</title>
 </head>
 
 <body>
+
     <div id="loadingScreen" class="loading-overlay">
         <div class="spinner"></div>
     </div>
     <h1>Order History</h1>
     <button onclick="back()">Back</button>
+    <input type="text" id="findProductNameId" placeholder="Find Product Name" oninput="findProductName(event)">
+    <input type="date" id="startDate" onchange="findDate()">
+    <span>To</span>
+    <input type="date" id="endDate" onchange="findDate()">
 
-    <div id="listProductInCart"></div>
-    <div id="totalprice"></div>
+    <div id="dateOrder"></div>
+
+    
 
 
     <script type="module" src="../orderHistory/orderHistory.js"></script>

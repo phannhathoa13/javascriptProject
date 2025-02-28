@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../../../feautureReuse/loadingScreen.css">
+    <link rel="stylesheet" href="../accountManager/accountManager.css">
+    <title>Edit Account</title>
+</head>
+<body>
+    <div id="loadingScreen" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    <div class="heading-content">Admin Manager Account</div>
+    <button onclick="back()">Back</button>
+    <input type="text" placeholder="Find Username" oninput="findUserName(event)">
+    <div id="listAccount"></div>
+
+    <script type="module" src="../accountManager/accountManager.js"></script>
+</body>
+</html>
