@@ -53,7 +53,31 @@ function displayProductsOrder() {
 }
 
 window.reOrder = async function reOrder() {
-    document.getElementById('alertInfor').style.display = "block";
+    try {
+        showLoading("loadingScreen");
+        const orderHistory = getOrderHistory();
+        if (userLogedIn.products.length == 0) {
+            const purchasedProducts = orderHistory.cartList.map((products) => {
+                userLogedIn.cartList = products;
+                return products
+            })
+            const updatedTotalPrice = purchasedProducts.reduce((total, products) => total + products.amount * products.price, 0);
+            const updatedCart = await updateCartInAccount(userLogedIn.cartID, userLogedIn, purchasedProducts, updatedTotalPrice);
+            if (updatedCart) {
+                userLogedIn = updatedCart;
+                hideLoading("loadingScreen");
+                setTimeout(() => {
+                    window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`;
+                }, 100);
+            }
+        }
+        else {
+            document.getElementById('alertInfor').style.display = "block";
+        }
+    } catch (error) {
+        console.log("ReOrder get error", error);
+    }
+
 }
 
 window.createNewOrder = async function createNewOrder() {
@@ -73,7 +97,7 @@ window.createNewOrder = async function createNewOrder() {
                 window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`;
             }, 100);
         }
-    } catch(error) {
+    } catch (error) {
         console.log("Create new order get error", error);
     }
 }

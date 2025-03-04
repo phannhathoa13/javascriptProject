@@ -69,10 +69,10 @@ window.findDate = function findDate() {
   const productSimilar = getProductSimilarInput(productNameInput);
   const orderExistInDate = filterOrdersByDate(startDateValue, endDateValue);
 
-  if (!orderExistInDate){
+  if (!orderExistInDate) {
     dateOrderDOM.innerHTML = "";
   }
-  if (!isOrderExistOnDate(startDateValue,endDateValue,productSimilar)){
+  if (!isOrderExistOnDate(startDateValue, endDateValue, productSimilar)) {
     dateOrderDOM.innerHTML = "";
   }
   if (orderExistInDate) {
@@ -81,7 +81,7 @@ window.findDate = function findDate() {
   }
 }
 
-function isOrderExistOnDate(startDate,endDate,productSimilar){
+function isOrderExistOnDate(startDate, endDate, productSimilar) {
   const formatStartDate = formatTime(startDate);
   const formatEndDate = formatTime(endDate);
 
