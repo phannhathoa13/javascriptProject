@@ -15,6 +15,7 @@ const userLogedIn = await fetchCartFromUserLogedIn(getuserId);
 const orderList = await fetchListOrder();
 const dateOrderDOM = document.getElementById("dateOrder");
 
+
 displayOrderHistory();
 
 function displayOrderHistory() {
@@ -27,7 +28,7 @@ function displayOrderHistory() {
         userLogedIn.cartID
       )}`;
     } else {
-      displayOderContainerProduct(orderHistory);
+      displayOrderContainerProducts(orderHistory);
     }
   } catch (error) {
     console.log("Display order history get error", error);
@@ -40,57 +41,24 @@ window.findProductName = function findProductName(event) {
   const productNameInput = event.target.value.toLowerCase();
   const orderHistory = getOrderHistory();
 
-  const startDateValue = document.getElementById('startDate').value;
-  const endDateValue = document.getElementById('endDate').value;
-
   const productSimilar = getProductSimilarInput(productNameInput);
-
-  const filterDateProductSimilar = filterDateInProductSimilar(startDateValue,endDateValue,productSimilar);
-  // if (!productSimilar) {
-  //   dateOrderDOM.innerHTML = "";
-  //   displayOderContainerProduct(orderHistory);
-  // }
-  // else if (productSimilar) {
-  //   dateOrderDOM.innerHTML = "";
-  //   displayOderContainerProduct(productSimilar);
-  // }
-  // else if (productSimilar && !isStartDateAndEndDateHaveOrder(startDateValue,endDateValue)) {
-  //   dateOrderDOM.innerHTML = "";
-  // }
-  // else if (productSimilar && filterDateProductSimilar) {
-  //   dateOrderDOM.innerHTML ="";
-  //   displayOderContainerProduct(filterDateProductSimilar);
-  // }
-  
-  if(productSimilar.length > 0){
-    if (dateOrderDOM) {
-      dateOrderDOM.innerHTML = ""
-    }
-  displayOderContainerProduct(productSimilar);
+  if (productNameInput == "") {
+    dateOrderDOM.innerHTML = "";
+    displayOrderContainerProducts(orderHistory);
+  }
+  else if (!productSimilar) {
+    dateOrderDOM.innerHTML = "";
+  }
+  else {
+    dateOrderDOM.innerHTML = "";
+    displayOrderContainerProducts(productSimilar);
   }
 
-  console.log(productSimilar);
-}
-
-function filterDateInProductSimilar(startDate,endDate,productSimilar){
-  const formatStartDate = formatTimeToLocaleDateString(startDate);
-  const formatEndDate = formatTimeToLocaleDateString(endDate);
-
-  return productSimilar.filter((order) =>{
-    const formatTimeInProductSimilar = formatTimeToLocaleDateString(order.createdAt);
-    return formatTimeInProductSimilar >= formatStartDate && formatTimeInProductSimilar <= formatEndDate;
-  })
 }
 
 function getProductSimilarInput(productNameInput) {
   const orderHistory = getOrderHistory();
-  return orderHistory.map((order) => {
-    const filterProductName = order.cartList.filter((products) => products.productName.toLowerCase() == productNameInput);
-    return {
-      ...order,
-      cartList: filterProductName,
-    }
-  }).filter((order) => order.cartList.length > 0)
+  return orderHistory.filter((order) => order.cartList.some((products) => products.productName.toLowerCase() == productNameInput.toLowerCase()))
 }
 
 window.findDate = function findDate() {
@@ -100,58 +68,40 @@ window.findDate = function findDate() {
 
   const orderHistory = getOrderHistory();
   const productSimilar = getProductSimilarInput(productNameInput);
-  const filterDateProductSimilar = filterDateInProductSimilar(startDateValue,endDateValue,productSimilar);
+  const orderExistInDate = filterOrdersByDate(startDateValue, endDateValue);
 
-  const filterOrder = filterOrdersByDate(startDateValue, endDateValue);
+  if (!orderExistInDate) {
+    dateOrderDOM.innerHTML = "";
+  }
+  else if (productSimilar && !orderExistInDate) {
+    console.log("true");
+  }
 
-  if (!isStartDateAndEndDateHaveOrder(startDateValue, endDateValue)) {
-    dateOrderDOM.innerHTML = "";
-  }
-  else if (isStartDateAndEndDateHaveOrder(startDateValue,endDateValue)) {
-    dateOrderDOM.innerHTML = "";
-    displayOderContainerProduct(filterOrder);
-  }
-  else if (productSimilar && filterDateProductSimilar) {
-    dateOrderDOM.innerHTML = "";
-    displayOderContainerProduct(filterDateProductSimilar);
-  }
-  
 }
 
 function filterOrdersByDate(startDate, endDate) {
   const orderHistory = getOrderHistory();
-  const updateStarteDate = formatTimeToLocaleDateString(startDate);
-  const updateEndDate = formatTimeToLocaleDateString(endDate);
+  const formatStartDate = formatTime(startDate);
+  const formatEndDate = formatTime(endDate);
 
   return orderHistory.filter((order) => {
-    const updateTime = formatTimeToLocaleDateString(order.createdAt);
-    return updateTime >= updateStarteDate && updateTime <= updateEndDate
+    const formatOrderDate = formatTime(order.createdAt);
+    return formatOrderDate >= formatStartDate && formatOrderDate <= formatEndDate
   });
 }
 
-function isStartDateAndEndDateHaveOrder(startDate, endDate) {
-  const orderHistory = getOrderHistory();
-  const updateStarteDate = formatTimeToLocaleDateString(startDate);
-  const updateEndDate = formatTimeToLocaleDateString(endDate);
-
-  return orderHistory.some((order) => {
-    const updateTime = formatTimeToLocaleDateString(order.createdAt);
-    return updateTime >= updateStarteDate && updateTime <= updateEndDate
-  });
+function formatTime(time) {
+  return new Date(time).getTime();
 }
 
-function formatTimeToLocaleDateString(time) {
-  return new Date(time).toLocaleDateString();
-}
-
-function displayOderContainerProduct(orderHistory) {
+function displayOrderContainerProducts(orderHistory) {
   try {
     showLoading("loadingScreen");
     const updateToLatestTime = orderHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    const updatedTime = [...new Set(updateToLatestTime.map((order) => order.createdAt))];
+    const filterDateSimilar = [...new Set(updateToLatestTime.map((order) => order.createdAt))];
 
-    updatedTime.forEach((dates) => {
-      const orderHistoryDate = getOderSameDate(dates);
+    filterDateSimilar.forEach((dates) => {
+      const orderHistoryDate = getOderSameDate(updateToLatestTime, dates);
 
       const dateDOM = document.createElement("div");
       dateDOM.style.display = "flex";
@@ -168,38 +118,37 @@ function displayOderContainerProduct(orderHistory) {
       dateDOM.appendChild(dateOrder);
       dateDOM.appendChild(buttonExtend);
 
-      const orderDiv = document.createElement("div");
-      orderDiv.style.marginLeft = "30px";
-      orderDiv.style.display = "none";
+      const orderDivFather = document.createElement("div");
+      orderDivFather.style.marginLeft = "30px";
+      orderDivFather.style.display = "none";
 
       orderHistoryDate.forEach((order) => {
-        let totalPrice = 0;
-        const orderIdDOM = document.createElement("div");
-        orderIdDOM.style.margin = "20px";
-        orderIdDOM.style.display = "Flex";
+        var totalPrice = 0;
+        const orderContainerProduct = document.createElement("div");
+        orderContainerProduct.style.margin = "20px";
+        orderContainerProduct.style.display = "Flex";
 
         const viewDetails = document.createElement("div");
         viewDetails.textContent = "view details";
         viewDetails.style.marginLeft = "10px";
         viewDetails.style.cursor = "pointer";
 
-        dateOrderDOM.appendChild(orderIdDOM);
-
         order.cartList.forEach((products) => {
           totalPrice += products.amount * products.price;
-          orderIdDOM.textContent = `OrderID: ${order.orderID}, created At ${order.createdAt}, total price: ${totalPrice}$`;
-
-          orderDiv.appendChild(orderIdDOM);
-          orderIdDOM.appendChild(viewDetails);
+          orderContainerProduct.textContent = `OrderID: ${order.orderID}, created At ${order.createdAt}, total price: ${totalPrice}$`;
+          orderDivFather.appendChild(orderContainerProduct);
+          orderContainerProduct.appendChild(viewDetails);
+          dateOrderDOM.appendChild(orderDivFather);
 
           buttonExtend.onclick = () => {
-            displayInforProduct(orderDiv);
+            displayInforProduct(orderDivFather);
           }
+
           viewDetails.onclick = () => {
             window.location.href = `../orderDetails/orderDetails.html${postCartIdAndOrderIDToParam(userLogedIn.cartID, order.orderID)}`;
           }
-          dateOrderDOM.appendChild(orderDiv);
         })
+
       })
     })
   } catch (error) {
@@ -218,9 +167,8 @@ function displayInforProduct(productsDOM) {
   }
 }
 
-function getOderSameDate(DateDOM) {
-  const orderHistory = getOrderHistory();
-  return orderHistory.filter((order) => order.createdAt == DateDOM)
+function getOderSameDate(orderSameDate, DateDOM) {
+  return orderSameDate.filter((order) => order.createdAt == DateDOM)
 }
 
 
