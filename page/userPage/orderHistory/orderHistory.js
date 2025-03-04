@@ -66,17 +66,29 @@ window.findDate = function findDate() {
   const endDateValue = document.getElementById('endDate').value;
   const productNameInput = document.getElementById('findProductNameId').value;
 
-  const orderHistory = getOrderHistory();
   const productSimilar = getProductSimilarInput(productNameInput);
   const orderExistInDate = filterOrdersByDate(startDateValue, endDateValue);
 
-  if (!orderExistInDate) {
+  if (!orderExistInDate){
     dateOrderDOM.innerHTML = "";
   }
-  else if (productSimilar && !orderExistInDate) {
-    console.log("true");
+  if (!isOrderExistOnDate(startDateValue,endDateValue,productSimilar)){
+    dateOrderDOM.innerHTML = "";
   }
+  if (orderExistInDate) {
+    dateOrderDOM.innerHTML = "";
+    displayOrderContainerProducts(orderExistInDate)
+  }
+}
 
+function isOrderExistOnDate(startDate,endDate,productSimilar){
+  const formatStartDate = formatTime(startDate);
+  const formatEndDate = formatTime(endDate);
+
+  return productSimilar.some((order) => {
+    const formatOrderDate = formatTime(order.createdAt);
+    return formatOrderDate >= formatStartDate && formatOrderDate <= formatEndDate
+  });
 }
 
 function filterOrdersByDate(startDate, endDate) {
