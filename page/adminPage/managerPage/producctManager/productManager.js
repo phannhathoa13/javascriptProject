@@ -45,7 +45,7 @@ function displayProduct() {
             const buttonEditDOM = document.createElement("button");
             buttonEditDOM.textContent = "Edit";
             buttonEditDOM.onclick = () => {
-                window.location.href = `../editPage/editPage.html${postCartIdAndProductContainer(userLogedIn.cartID,products.id,products)}`;
+                window.location.href = `../editPage/editPage.html${postCartIdAndProductContainer(userLogedIn.cartID, products.id, products)}`;
             };
 
             const buttonRemoveDOM = document.createElement("button");
@@ -80,6 +80,7 @@ document.getElementById("createProduct").addEventListener("submit", async functi
         const previewImgString = previewImgDOM.src;
         const reader = new FileReader();
         if (!file && !lastImgPreviewDOM) {
+            hideLoading("loadingScreenDOM");
             window.alert("You must choose a image for products");
             return;
         }

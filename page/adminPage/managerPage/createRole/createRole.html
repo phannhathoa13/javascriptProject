@@ -3,23 +3,27 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../../../../feautureReuse/loadingScreen.css">
-    <link rel="stylesheet" href="../accountManager/accountManager.css">
-    <title>Edit Account</title>
+    <title>Create Roles</title>
 </head>
 
 <body>
+    <h3>Create Roles Manager</h3>
     <div id="loadingScreen" class="loading-overlay">
         <div class="spinner"></div>
     </div>
-    <div class="heading-content">Admin Manager Account</div>
     <button onclick="back()">Back</button>
-    <input type="text" placeholder="Find Username" oninput="findUserName(event)">
+    <input type="text" id="codeName" placeholder="Create Code Name">
+    <select id="roles" name="roles">
+        <option value="USERADMIN">USERADMIN</option>
+        <option value="OWNER">OWNER</option>
+    </select>
     <button id="createCodeRoles" onclick="createCodeRoles()">Create Code Roles</button>
-    <div id="listAccount"></div>
 
-    <script type="module" src="../accountManager/accountManager.js"></script>
+    <script type="module" src="../createRole/createRole.js"></script>
+
 </body>
 
 </html>

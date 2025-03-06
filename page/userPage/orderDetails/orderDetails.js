@@ -54,7 +54,6 @@ function displayProductsOrder() {
 
 window.reOrder = async function reOrder() {
     try {
-        showLoading("loadingScreen");
         const orderHistory = getOrderHistory();
         if (userLogedIn.products.length == 0) {
             const purchasedProducts = orderHistory.cartList.map((products) => {
@@ -65,10 +64,7 @@ window.reOrder = async function reOrder() {
             const updatedCart = await updateCartInAccount(userLogedIn.cartID, userLogedIn, purchasedProducts, updatedTotalPrice);
             if (updatedCart) {
                 userLogedIn = updatedCart;
-                hideLoading("loadingScreen");
-                setTimeout(() => {
-                    window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`;
-                }, 100);
+                window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`;
             }
         }
         else {

@@ -1,4 +1,5 @@
 import { registerCartUser } from "../../../controllers/cartControllers.js";
+import { fetchListRole } from "../../../controllers/rolesControllers.js";
 import { fetchUserAPI, registerAccountUser } from "../../../controllers/userController.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import Cart from "../../../models/cartModels.js";
@@ -6,6 +7,7 @@ import User from "../../../models/user.js";
 import { validationEmail, validationPassword, validationUsername } from "../../../validation/loginValidation.js";
 
 const listUser = await fetchUserAPI();
+const listRole = await fetchListRole();
 const usernameWarning = document.getElementById('usernameWarning');
 const passwordWarning = document.getElementById('passwordWarning');
 const confirmPasswordWarning = document.getElementById('cfpwdWarning');
@@ -16,7 +18,10 @@ const passwordFather = document.getElementById('pwd');
 const confirmPasswordFather = document.getElementById('cfpwd');
 const emailFather = document.getElementById('email');
 const registerButton = document.getElementById('register');
+const codeNameInputFather = document.getElementById('codeRoleInPut');
 registerButton.disabled = true;
+
+let count = 5;
 
 let isUsernameValid = false;
 let isPasswordValid = false;
@@ -139,42 +144,51 @@ function updateButtonRegister() {
 }
 document.getElementById('form').addEventListener('submit', async function (event) {
     event.preventDefault();
-    showLoading("loadingScreen");
-    const codeRole = {
-        userADMIN: "USERADMINBABY",
-        OWNER: "OWNERBABY"
+    try {
+        const codeRoleInput = codeNameInputFather.value;
+        const codeName$ = getCodeRole(codeRoleInput);
+        const formData = new FormData(this);
+        if (!codeName$) {
+            validateCountAmount();
+        }
+        else if (codeRoleInput == "") {
+            registerAccountWithRole(formData, "CUSTOMER");
+            window.alert("Register succeed");
+            window.location.href = "../loginPage/loginPage.html";
+        }
+        else {
+            registerAccountWithRole(formData, codeName$.role);
+            window.alert("Register succeed");
+            window.location.href = "../loginPage/loginPage.html";
+        }
+    } catch (error) {
+        console.log("register get errror", error);
     }
-    const codeRoleInput = document.getElementById('codeRoleInPut').value;
-    const formData = new FormData(this);
-    if (codeRoleInput == "" || codeRoleInput != codeRole.userADMIN && codeRoleInput != codeRole.OWNER) {
-        await registerAccountWithRole(formData,"CUSTOMER");
-        hideLoading('loadingScreen');
-        setTimeout(() => {
-            window.alert("register succeed");
-        window.location.href = "../loginPage/loginPage.html";
-        }, 100);
-    }
-    else if (codeRoleInput == codeRole.userADMIN) {
-        await registerAccountWithRole(formData,"USERADMIN");
 
-        hideLoading('loadingScreen');
-        setTimeout(() => {
-            window.alert("register succeed");
-        window.location.href = "../loginPage/loginPage.html";
-        }, 100);
-    }
-    else if (codeRoleInput == codeRole.OWNER) {
-        await registerAccountWithRole(formData,"OWNER");
 
-        hideLoading('loadingScreen');
-        setTimeout(() => {
-            window.alert("register succeed");
-        window.location.href = "../loginPage/loginPage.html";
-        }, 100);
-    }
 })
 
 
+function validateCountAmount() {
+    count--;
+    localStorage.setItem("count", count);
+    if (count != 0) {
+        window.alert(`Your code name is wrong, you can try only ${count} time agian `);
+        return;
+    }
+    else if (count == 0) {
+        window.alert("Please try agian after 60 minutes");
+        codeNameInputFather.disabled = true;
+        registerButton.disabled = true;
+        setTimeout(() => {
+            count = 5;
+            localStorage.removeItem("count");
+            codeNameInputFather.disabled = false;
+            registerButton.disabled = false;
+        }, 6000000);
+        return;
+    }
+}
 
 async function registerAccountWithRole(formData, role) {
     const createdAt = new Date().toDateString();
@@ -191,6 +205,10 @@ async function registerAccountWithRole(formData, role) {
     )
     await registerAccountUser(user);
     await registerCartUser(cart);
+}
+
+function getCodeRole(codeRoleInput) {
+    return listRole.find((code) => code.codeName == codeRoleInput);
 }
 
 window.goLogin = function goLogin() {

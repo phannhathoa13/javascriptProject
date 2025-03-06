@@ -8,19 +8,19 @@ const getListProduct = await fetchProductAPI();
 
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
-const editAccountButtonDOM = document.getElementById('editAccount');
-editAccountButtonDOM.style.display ="none";
-editAccountButtonDOM.style.margin = "5px"
+const accountsManagerButtonDOM = document.getElementById('accountsManager');
+accountsManagerButtonDOM.style.display = "none";
+accountsManagerButtonDOM.style.margin = "5px"
 
 const buttonContainer = document.getElementById('buttonContainer');
 buttonContainer.style.display = "flex";
 
-const editProductsButtonDOM = document.getElementById('editProducts');
-editProductsButtonDOM.style.margin = "5px"
+const productsManagerButtonDOM = document.getElementById('productsManager');
+productsManagerButtonDOM.style.margin = "5px";
 
 const listProductDOM = document.getElementById('listProduct');
 isAdminAccountLogedIn();
-editAccount();
+accountsManager();
 displayListProduct();
 async function displayListProduct() {
     try {
@@ -64,31 +64,31 @@ async function displayListProduct() {
     }
 }
 
-function editAccount(){
+function accountsManager() {
     const ownerAccount = userLogedIn.user.role;
     if (ownerAccount == "OWNER") {
-        editAccountButtonDOM.style.display ="block";
+        accountsManagerButtonDOM.style.display = "block";
         return;
-    }else {
-        editAccountButtonDOM.style.display ="none";
+    } else {
+        accountsManagerButtonDOM.style.display = "none";
         return;
     }
 }
 
 
-window.editProducts = function editProducts() {
-    window.location.href =`../../adminPage/managerPage/producctManager/productManager.html${postCartIDToParam(userLogedIn.cartID)}`
+window.productsManager = function productsManager() {
+    window.location.href = `../../adminPage/managerPage/producctManager/productManager.html${postCartIDToParam(userLogedIn.cartID)}`
 }
-window.editAccountPage = function editAccountPage(){
+window.accountsManager = function accountsManager() {
     window.location.href = `../../adminPage/managerPage/accountManager/accountManager.html${postCartIDToParam(userLogedIn.cartID)}`;
 }
 function isAdminAccountLogedIn() {
     const adminAccount = userLogedIn.user.role
     if (adminAccount == "USERADMIN" || adminAccount == "OWNER") {
-        editProductsButtonDOM.style.display = "block";
+        productsManagerButtonDOM.style.display = "block";
     }
     else {
-        editProductsButtonDOM.style.display = "none";
+        productsManagerButtonDOM.style.display = "none";
     }
 }
 

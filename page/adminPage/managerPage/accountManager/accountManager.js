@@ -8,6 +8,8 @@ const listAccountDOM = document.getElementById('listAccount');
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
 
+const buttonCreateRolesDOM = document.getElementById('createCodeRoles');
+
 displayListUser();
 function displayListUser() {
     displayListUserDOM(listUser);
@@ -18,9 +20,9 @@ async function displayListUserDOM(listUserDOM) {
     try {
         showLoading("loadingScreen");
         const role = {
-            customer:"CUSTOMER",
-            userAdmin:"USERADMIN",
-            owner:"OWNER",
+            customer: "CUSTOMER",
+            userAdmin: "USERADMIN",
+            owner: "OWNER",
         }
         listUserDOM.forEach((users) => {
             const userDOM = document.createElement("div");
@@ -43,19 +45,19 @@ async function displayListUserDOM(listUserDOM) {
             const customerRole = document.createElement("button");
             customerRole.textContent = `ROLE: ${role.customer}`;
             customerRole.onclick = () => {
-                changeRoleUser(users,role.customer);
+                changeRoleUser(users, role.customer);
             }
- 
+
             const userAdminRole = document.createElement("button");
             userAdminRole.textContent = `ROLE: ${role.userAdmin}`;
             userAdminRole.onclick = () => {
-                changeRoleUser(users,role.userAdmin);
+                changeRoleUser(users, role.userAdmin);
             }
 
             const ownerRole = document.createElement("button");
             ownerRole.textContent = `ROLE: ${role.owner}`;
             ownerRole.onclick = () => {
-                changeRoleUser(users,role.owner);
+                changeRoleUser(users, role.owner);
             }
 
             const editButtonDOM = document.createElement("button");
@@ -98,13 +100,13 @@ async function displayListUserDOM(listUserDOM) {
     } catch (error) {
         console.log("Display list user get error", error);
     }
-    finally{
+    finally {
         hideLoading('loadingScreen');
     }
 }
 
 async function changeRoleUser(user, role) {
-    const updatedRole = await editRoleAccount$(user.idUser,user,role);
+    const updatedRole = await editRoleAccount$(user.idUser, user, role);
     if (updatedRole) {
         window.alert(`Changed Role User: ${user.username} to role: ${role} `)
         location.reload();
@@ -112,35 +114,39 @@ async function changeRoleUser(user, role) {
 }
 
 function displayListRole(roleDOM, roleUserDOM) {
-    if (roleDOM.style.display == "block"){
-        roleUserDOM.style.display ="block";
+    if (roleDOM.style.display == "block") {
+        roleUserDOM.style.display = "block";
     }
-    else{
+    else {
         roleDOM.style.display = "block";
     }
 }
 
-window.findUserName = function findUserName(event){
+window.findUserName = function findUserName(event) {
     const usernameInput = event.target.value.toLowerCase();
     const filterUser = filterUsername(usernameInput);
     if (!filterUser) {
-        listAccountDOM.innerHTML ="";
+        listAccountDOM.innerHTML = "";
     }
-    else if(usernameInput == ""){
-        listAccountDOM.innerHTML ="";
+    else if (usernameInput == "") {
+        listAccountDOM.innerHTML = "";
         displayListUserDOM(listUser);
     }
     else {
-        listAccountDOM.innerHTML ="";
+        listAccountDOM.innerHTML = "";
         displayListUserDOM(filterUser);
     }
+}
+
+window.createCodeRoles = function createCodeRoles() {
+    window.location.href = `../createRole/createRole.html${postCartIDToParam(userLogedIn.cartID)}`;
 }
 
 window.back = function back() {
     window.location.href = `../producctManager/productManager.html${postCartIDToParam(userLogedIn.cartID)}`;
 }
 
-function filterUsername(usernameInput){
+function filterUsername(usernameInput) {
     return listUser.filter((users) => users.username.toLowerCase().includes(usernameInput));
 }
 

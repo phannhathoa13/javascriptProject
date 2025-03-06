@@ -1,20 +1,21 @@
-.alert{
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
+.alert {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
 }
-.alert-content{
-    margin: auto;
-    width: 300px;
-    height: 88px;
-    text-align: center;
-    background-color: white;
-    border-radius: 8px;
+.alert-content {
+  font-size: 22px;
+  margin: auto;
+  width: 300px;
+  height: 134px;
+  text-align: center;
+  background-color: cornsilk;
+  border-radius: 10px;
 }
-.content{
-    margin: 3px;
+.content {
+  margin: 3px;
 }
