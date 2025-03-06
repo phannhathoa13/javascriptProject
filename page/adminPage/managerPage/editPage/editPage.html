@@ -13,12 +13,17 @@
     <div id="loadingScreenDOM" class="loading-overlay">
         <div class="spinner"></div>
     </div>
-    <form id="editValue">
+    <div>
         <input type="file" id="fileInput" accept="image/*" onchange="viewImage(event)" />
-        <img src="" id="previewImg" width="150px" />
-        <input type="text" name="productName" id="productName" placeholder="product name">
-        <input type="number" name="amount" id="amount" placeholder="amount">
-        <input type="number" name="price" id="price" placeholder="price" >
+        <button onclick="chooseFile()">Choose File</button>
+    </div>
+    <form id="editValue">
+        <div id="inputContainer">
+            <img src="" id="previewImg" width="150px" />
+            <input type="text" name="productName" id="productName" placeholder="product name">
+            <input type="number" name="amount" id="amount" placeholder="amount">
+            <input type="number" name="price" id="price" placeholder="price">
+        </div>
         <input type="submit" value="Save" id="create">
     </form>
 

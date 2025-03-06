@@ -19,12 +19,12 @@ createProductDOM.style.margin = "20px";
 
 const listProductDOM = document.getElementById("listProduct");
 const fileFather = document.getElementById('fileInput');
+fileFather.style.display = "none";
 
 const previewImgDOM = document.getElementById('previewImg');
 
 
 let lastImgPreviewDOM = "";
-
 displayProduct();
 function displayProduct() {
     listProduct.forEach((products) => {
@@ -117,7 +117,7 @@ document.getElementById("createProduct").addEventListener("submit", async functi
                         await createProduct(product);
                         hideLoading("loadingScreenDOM");
                         setTimeout(() => {
-                            window.alert("Created product");
+                            window.alert("Created Product");
                             location.reload();
                         }, 100);
                     }
@@ -144,14 +144,14 @@ window.viewImage = function viewImage(event) {
         }
         else if (!validateImageSize(file)) {
             window.alert("Your image can't larger than 75KB");
-            fileFather.value = "";
             previewImgDOM.src = lastImgPreviewDOM;
+            fileFather.value = "";
             return;
         }
         else if (isImageProductExisted(base64String)) {
             window.alert("Your image is existed");
-            fileFather.value = "";
             previewImgDOM.src = lastImgPreviewDOM;
+            fileFather.value = "";
             return;
         }
         else {
@@ -178,33 +178,33 @@ function validateValueInput(product) {
     const productAmount = product.amount;
     const productPrice = product.price;
     if (productExisted) {
+        hideLoading("loadingScreenDOM");
         window.alert(`${productExisted.productName} is existed`);
-        hideLoading("loadingScreen");
         return false;
     }
     else if (!productName) {
+        hideLoading("loadingScreenDOM");
         window.alert("Please enter the product name");
-        hideLoading("loadingScreen");
         return false;
     }
     else if (!productAmount) {
+        hideLoading("loadingScreenDOM");
         window.alert("Please enter the product amount");
-        hideLoading("loadingScreen");
         return false;
     }
     else if (productAmount <= 0) {
+        hideLoading("loadingScreenDOM");
         window.alert("The amount must bigger than 0");
-        hideLoading("loadingScreen");
         return false;
     }
     else if (!productPrice) {
+        hideLoading("loadingScreenDOM");
         window.alert("Please enter the product price");
-        hideLoading("loadingScreen");
         return false;
     }
     else if (productPrice <= 0) {
+        hideLoading("loadingScreenDOM");
         window.alert("The price must bigger than 0");
-        hideLoading("loadingScreen");
         return false;
     }
     else {
@@ -237,4 +237,8 @@ window.switchToShoppingPage = function switchToShoppingPage() {
     window.location.href = `../../../userPage/shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
 }
 
+
+window.chooseFile = function chooseFile() {
+    document.getElementById('fileInput').click();
+}
 

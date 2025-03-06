@@ -148,13 +148,13 @@ document.getElementById('form').addEventListener('submit', async function (event
         const codeRoleInput = codeNameInputFather.value;
         const codeName$ = getCodeRole(codeRoleInput);
         const formData = new FormData(this);
-        if (!codeName$) {
-            validateCountAmount();
-        }
-        else if (codeRoleInput == "") {
+        if (codeRoleInput == "") {
             registerAccountWithRole(formData, "CUSTOMER");
             window.alert("Register succeed");
             window.location.href = "../loginPage/loginPage.html";
+        }
+        else if (!codeName$) {
+            validateCountAmount();
         }
         else {
             registerAccountWithRole(formData, codeName$.role);

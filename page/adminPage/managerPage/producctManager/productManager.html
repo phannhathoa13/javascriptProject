@@ -15,19 +15,21 @@
         <button class="button" onclick="logOut()">Log Out</button>
         <button class="button" onclick="switchToShoppingPage()">Shopping Page</button>
     </div>
-    
     <div id="loadingScreenDOM" class="loading-overlay">
         <div class="spinner"></div>
     </div>
-    <form id="createProduct">
+    <div>
         <input type="file" id="fileInput" accept="image/*" onchange="viewImage(event)" />
+        <button onclick="chooseFile()">Choose File</button>
+    </div>
+    <form id="createProduct">
         <img src="" id="previewImg" width="100px" />
         <input type="text" name="productName" id="productName" placeholder="product name" />
         <input type="number" name="amount" id="amount" placeholder="amount" />
         <input type="number" name="price" id="price" placeholder="price" />
         <input type="submit" value="Create" id="create" />
     </form>
-    
+
     <div id="listProduct"></div>
     <script type="module" src="../producctManager/productManager.js"></script>
 </body>
