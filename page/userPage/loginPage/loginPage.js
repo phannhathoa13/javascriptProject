@@ -3,9 +3,7 @@ import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.j
 import { postCartIDToParam } from "../../../routes/cartRoutes.js";
 
 const listUser = await fetchUserAPI();
-if (listUser) {
-    hideLoading('loadingScreen');
-}
+hideLoading('loadingScreen');
 
 
 document.getElementById('form').addEventListener('submit', function (event) {

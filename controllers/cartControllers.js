@@ -80,4 +80,25 @@ async function updateCartInAccount(cartID, userLogedIn, updatedProduct, updatedT
         console.log(`update new Value In User Cart error:`, error);
     }
 }
-export { registerCartUser, fetchCartFromUserLogedIn, addProductToCartId, fetchCartFromApi, updateCartInAccount }
+
+async function updateCart$(cartID, userInfor,cartInfor) {
+    try {
+        const reponse = await fetch(`${cartApiUrl}/${cartID}`, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user: userInfor,
+                products: cartInfor.products,
+                totalPrice: cartInfor.totalPrice,
+                createdAt: cartInfor.createdAt,
+                cartID: cartInfor.cartID
+            })
+        })
+        return await reponse.json();
+    } catch (error) {
+        console.log(`update new Value In User Cart error:`, error);
+    }
+}
+export { registerCartUser, fetchCartFromUserLogedIn, addProductToCartId, fetchCartFromApi, updateCartInAccount,updateCart$ }

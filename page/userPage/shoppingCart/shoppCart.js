@@ -8,23 +8,17 @@ const getListProduct = await fetchProductAPI();
 
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
-const accountsManagerButtonDOM = document.getElementById('accountsManager');
-accountsManagerButtonDOM.style.display = "none";
-accountsManagerButtonDOM.style.margin = "5px"
-
-const buttonContainer = document.getElementById('buttonContainer');
-buttonContainer.style.display = "flex";
-
-const productsManagerButtonDOM = document.getElementById('productsManager');
-productsManagerButtonDOM.style.margin = "5px";
-
-const listProductDOM = document.getElementById('listProduct');
-isAdminAccountLogedIn();
-accountsManager();
 displayListProduct();
+checkRoleUserLogedIn();
+
 async function displayListProduct() {
     try {
         showLoading('loadingScreen');
+        const listProductDOM = document.getElementById('listProduct');
+
+        const buttonContainer = document.getElementById('buttonContainer');
+        buttonContainer.style.display = "flex";
+
         getListProduct.forEach(products => {
             const productDivDOM = document.createElement("div");
             productDivDOM.style.display = "flex";
@@ -64,14 +58,36 @@ async function displayListProduct() {
     }
 }
 
-function accountsManager() {
-    const ownerAccount = userLogedIn.user.role;
-    if (ownerAccount == "OWNER") {
+function checkRoleUserLogedIn() {
+    const roleUserLogedIn = userLogedIn.user.role;
+
+    const accountsManagerButtonDOM = document.getElementById('accountsManager');
+    accountsManagerButtonDOM.style.display = "none";
+    accountsManagerButtonDOM.style.margin = "0px"
+
+    const productsManagerButtonDOM = document.getElementById('productsManager');
+    productsManagerButtonDOM.style.margin = "5px";
+
+    if (roleUserLogedIn == "OWNER") {
         accountsManagerButtonDOM.style.display = "block";
+        productsManagerButtonDOM.style.display = "block";
         return;
-    } else {
+    }if (roleUserLogedIn == "USERADMIN"){
+        productsManagerButtonDOM.style.display = "block";
+    }
+     else {
         accountsManagerButtonDOM.style.display = "none";
+        productsManagerButtonDOM.style.display = "none";
+
         return;
+    }
+
+   
+
+    if (roleUserLogedIn == "USERADMIN" || roleUserLogedIn == "OWNER") {
+    }
+    else {
+        productsManagerButtonDOM.style.display = "none";
     }
 }
 
@@ -82,15 +98,7 @@ window.productsManager = function productsManager() {
 window.accountsManager = function accountsManager() {
     window.location.href = `../../adminPage/managerPage/accountManager/accountManager.html${postCartIDToParam(userLogedIn.cartID)}`;
 }
-function isAdminAccountLogedIn() {
-    const adminAccount = userLogedIn.user.role
-    if (adminAccount == "USERADMIN" || adminAccount == "OWNER") {
-        productsManagerButtonDOM.style.display = "block";
-    }
-    else {
-        productsManagerButtonDOM.style.display = "none";
-    }
-}
+
 
 async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM, imageProductDOM) {
     try {
@@ -136,7 +144,6 @@ async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM, imag
             })
             cartValue.totalPrice += priceProductDOM;
             const updatedCart = await addProductToCartId(getUserIDInParam, cartValue);
-            console.log(cartValue, "Cart VAlue");
             if (updatedCart) {
                 userLogedIn = updatedCart;
                 hideLoading('loadingScreen');

@@ -145,48 +145,52 @@ function updateButtonRegister() {
 document.getElementById('form').addEventListener('submit', async function (event) {
     event.preventDefault();
     try {
+        showLoading('loadingScreen');
         const codeRoleInput = codeNameInputFather.value;
         const codeName$ = getCodeRole(codeRoleInput);
         const formData = new FormData(this);
         if (codeRoleInput == "") {
-            registerAccountWithRole(formData, "CUSTOMER");
-            window.alert("Register succeed");
-            window.location.href = "../loginPage/loginPage.html";
+            await registerAccountWithRole(formData, "CUSTOMER");
+            hideLoading('loadingScreen');
+            setTimeout(() => {
+                window.alert("Register succeed");
+                window.location.href = "../loginPage/loginPage.html";
+            }, 100);
         }
         else if (!codeName$) {
-            validateCountAmount();
+            validateCountAmount(formData);
         }
         else {
-            registerAccountWithRole(formData, codeName$.role);
-            window.alert("Register succeed");
-            window.location.href = "../loginPage/loginPage.html";
+            await registerAccountWithRole(formData, codeName$.role);
+            hideLoading('loadingScreen');
+            setTimeout(() => {
+                window.alert("Register succeed");
+                window.location.href = "../loginPage/loginPage.html";
+            }, 100);
         }
     } catch (error) {
         console.log("register get errror", error);
     }
-
-
 })
 
 
-function validateCountAmount() {
+async function validateCountAmount(formData) {
     count--;
     localStorage.setItem("count", count);
-    if (count != 0) {
-        window.alert(`Your code name is wrong, you can try only ${count} time agian `);
-        return;
-    }
-    else if (count == 0) {
-        window.alert("Please try agian after 60 minutes");
-        codeNameInputFather.disabled = true;
-        registerButton.disabled = true;
-        setTimeout(() => {
-            count = 5;
-            localStorage.removeItem("count");
-            codeNameInputFather.disabled = false;
-            registerButton.disabled = false;
-        }, 6000000);
-        return;
+    if (count >= 0){
+        if (count != 0) {
+            hideLoading('loadingScreen');
+            window.alert(`Your code name is wrong, you can try only ${count} time agian `);
+            return;
+        }
+        if (count == 0) {
+            await registerAccountWithRole(formData, "CUSTOMER");
+            hideLoading('loadingScreen');
+            setTimeout(() => {
+                window.alert("Register succeed");
+                window.location.href = "../loginPage/loginPage.html";
+            }, 100);
+        }
     }
 }
 

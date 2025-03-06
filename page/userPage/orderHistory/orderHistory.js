@@ -53,7 +53,6 @@ window.findProductName = function findProductName(event) {
     dateOrderDOM.innerHTML = "";
     displayOrderContainerProducts(productSimilar);
   }
-
 }
 
 function getProductSimilarInput(productNameInput) {
@@ -64,28 +63,44 @@ function getProductSimilarInput(productNameInput) {
 window.findDate = function findDate() {
   const startDateValue = document.getElementById('startDate').value;
   const endDateValue = document.getElementById('endDate').value;
+
+  const formatStartDate = new Date(startDateValue).toDateString();
+  const formatEndDate = new Date(endDateValue).toDateString();
+
   const productNameInput = document.getElementById('findProductNameId').value;
 
-  const productSimilar = getProductSimilarInput(productNameInput);
-  const orderExistInDate = filterOrdersByDate(startDateValue, endDateValue);
+  if (startDateValue && endDateValue) {
+    const productSimilar = getProductSimilarInput(productNameInput);
+    const orderByDate = filterOrdersByDate(formatStartDate, formatEndDate);
 
-  if (!orderExistInDate) {
-    dateOrderDOM.innerHTML = "";
-  }
-  if (!isOrderExistOnDate(startDateValue, endDateValue, productSimilar)) {
-    dateOrderDOM.innerHTML = "";
-  }
-  if (orderExistInDate) {
-    dateOrderDOM.innerHTML = "";
-    displayOrderContainerProducts(orderExistInDate)
+    const orderExistInDate = getThatProductExistInDate(formatStartDate, formatEndDate, productSimilar);
+
+    if (productNameInput) {
+      if (!orderByDate) {
+        dateOrderDOM.innerHTML = "";
+      }
+      else if (!orderExistInDate) {
+        dateOrderDOM.innerHTML = "";
+      }
+      else if (orderExistInDate) {
+        dateOrderDOM.innerHTML = "";
+        displayOrderContainerProducts(orderExistInDate)
+      }
+    }
+    else {
+      if (orderByDate) {
+        dateOrderDOM.innerHTML = "";
+        displayOrderContainerProducts(orderByDate)
+      }
+    }
   }
 }
 
-function isOrderExistOnDate(startDate, endDate, productSimilar) {
+function getThatProductExistInDate(startDate, endDate, productSimilar) {
   const formatStartDate = formatTime(startDate);
   const formatEndDate = formatTime(endDate);
 
-  return productSimilar.some((order) => {
+  return productSimilar.filter((order) => {
     const formatOrderDate = formatTime(order.createdAt);
     return formatOrderDate >= formatStartDate && formatOrderDate <= formatEndDate
   });

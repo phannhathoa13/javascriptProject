@@ -15,12 +15,15 @@
         <div class="spinner"></div>
     </div>
     <button onclick="back()">Back</button>
-    <input type="text" id="codeName" placeholder="Create Code Name">
+    <input type="text" id="codeName" placeholder="Create Code Name" oninput="validateCodeNameDOM(event)">
     <select id="roles" name="roles">
         <option value="USERADMIN">USERADMIN</option>
         <option value="OWNER">OWNER</option>
     </select>
     <button id="createCodeRoles" onclick="createCodeRoles()">Create Code Roles</button>
+    <div id="inputWarning"></div>
+
+
 
     <script type="module" src="../createRole/createRole.js"></script>
 

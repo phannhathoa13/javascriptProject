@@ -1,64 +1,43 @@
-import { fetchCartFromUserLogedIn } from "../../../../controllers/cartControllers.js";
-import { editRoleAccount$, fetchUserAPI, removeAccount } from "../../../../controllers/userController.js";
+import { fetchCartFromApi, fetchCartFromUserLogedIn, updateCart$ } from "../../../../controllers/cartControllers.js";
+import { editAccount$, fetchUserAPI, removeAccount } from "../../../../controllers/userController.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
 import { postUserIDToParam } from "../../../../routes/userRoutes.js";
 const listUser = await fetchUserAPI();
+const listCart = await fetchCartFromApi();
 const listAccountDOM = document.getElementById('listAccount');
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
 
-const buttonCreateRolesDOM = document.getElementById('createCodeRoles');
-
 displayListUser();
 function displayListUser() {
-    displayListUserDOM(listUser);
+    const listAccount$ = filterUserLogedIn();
+    displayListUserDOM(listAccount$);
 }
+
+console.log(listCart);
 
 
 async function displayListUserDOM(listUserDOM) {
     try {
         showLoading("loadingScreen");
-        const role = {
-            customer: "CUSTOMER",
-            userAdmin: "USERADMIN",
-            owner: "OWNER",
-        }
         listUserDOM.forEach((users) => {
             const userDOM = document.createElement("div");
-            userDOM.textContent = `username: ${users.username}, password: ${users.password}, email: ${users.email}, created at: ${users.createdAt}`;
+            userDOM.textContent = `ID: ${users.idUser}, username: ${users.username}, password: `;
             userDOM.style.display = "flex";
             userDOM.style.alignItems = "center";
             userDOM.style.margin = "5px";
 
-            const roleUserDOM = document.createElement("button");
-            roleUserDOM.textContent = `Role: ${users.role}`;
-            roleUserDOM.style.margin = "5px";
-
-            const roleFatherContainer = document.createElement("span");
-            roleFatherContainer.style.display = "flex";
-            roleFatherContainer.style.flexDirection = "column";
-            roleFatherContainer.style.width = "150px";
-            roleFatherContainer.style.margin = "5px";
-            roleFatherContainer.style.display = "none";
-
-            const customerRole = document.createElement("button");
-            customerRole.textContent = `ROLE: ${role.customer}`;
-            customerRole.onclick = () => {
-                changeRoleUser(users, role.customer);
+            const passwordSpan = document.createElement("span");
+            passwordSpan.textContent = "*****";
+            passwordSpan.style.cursor = "pointer";
+            passwordSpan.onclick = () => {
+                displayUserPassword(passwordSpan, users.password);
             }
 
-            const userAdminRole = document.createElement("button");
-            userAdminRole.textContent = `ROLE: ${role.userAdmin}`;
-            userAdminRole.onclick = () => {
-                changeRoleUser(users, role.userAdmin);
-            }
-
-            const ownerRole = document.createElement("button");
-            ownerRole.textContent = `ROLE: ${role.owner}`;
-            ownerRole.onclick = () => {
-                changeRoleUser(users, role.owner);
-            }
+            const emailAndDateDOM = document.createElement("span");
+            emailAndDateDOM.textContent = `email: ${users.email}, created at: ${users.createdAt}`;
+            emailAndDateDOM.style.marginLeft = "5px";
 
             const editButtonDOM = document.createElement("button");
             editButtonDOM.textContent = "EDIT";
@@ -69,18 +48,13 @@ async function displayListUserDOM(listUserDOM) {
             removeButtonDOM.style.margin = "5px";
 
             listAccountDOM.appendChild(userDOM);
-            userDOM.appendChild(roleFatherContainer);
-            roleFatherContainer.appendChild(customerRole);
-            roleFatherContainer.appendChild(userAdminRole);
-            roleFatherContainer.appendChild(ownerRole);
-            userDOM.appendChild(roleUserDOM);
+            userDOM.appendChild(passwordSpan);
+            userDOM.appendChild(emailAndDateDOM);
+
+            createRoleDropDown(userDOM, users);
+
             userDOM.appendChild(editButtonDOM);
             userDOM.appendChild(removeButtonDOM);
-
-            roleUserDOM.onclick = () => {
-                displayListRole(roleFatherContainer);
-                roleUserDOM.style.display = "none";
-            }
 
             editButtonDOM.onclick = () => {
                 hideLoading('loadingScreen');
@@ -105,20 +79,93 @@ async function displayListUserDOM(listUserDOM) {
     }
 }
 
-async function changeRoleUser(user, role) {
-    const updatedRole = await editRoleAccount$(user.idUser, user, role);
-    if (updatedRole) {
-        window.alert(`Changed Role User: ${user.username} to role: ${role} `)
-        location.reload();
+async function createRoleDropDown(userDOM, user) {
+
+    const roleSelected = document.createElement("select");
+    roleSelected.style.marginLeft = "5px";
+
+    const firstRole = document.createElement("option");
+    firstRole.textContent = `Role: ${user.role}`;
+
+    const roleAdmin = document.createElement("option");
+    roleAdmin.textContent = "USERADMIN";
+
+    const roleOwner = document.createElement("option");
+    roleOwner.textContent = "OWNER";
+
+    const roleCustomer = document.createElement("option");
+    roleCustomer.textContent = "CUSTOMER";
+
+    roleSelected.appendChild(firstRole);
+    roleSelected.appendChild(roleAdmin);
+    roleSelected.appendChild(roleOwner);
+    roleSelected.appendChild(roleCustomer);
+    userDOM.appendChild(roleSelected);
+
+    roleSelected.onclick = () => {
+         changeRoleAccount(roleSelected.value, user);
     }
 }
 
-function displayListRole(roleDOM, roleUserDOM) {
-    if (roleDOM.style.display == "block") {
-        roleUserDOM.style.display = "block";
+async function changeRoleAccount(roleSelected, user) {
+    try {
+        let cartUserInfor = getCartUser(user.username);
+        if (roleSelected == "CUSTOMER") {
+            showLoading("loadingScreen");
+            user.role = "CUSTOMER";
+
+            const updateUser = await updateCart$(cartUserInfor.cartID ,user , cartUserInfor);
+            if (updateUser) {
+                cartUserInfor = updateUser;
+            }
+            await editAccount$(user.idUser, user);
+
+            displayWindowAlertAndReload(user);
+        }
+        else if (roleSelected == "USERADMIN") {
+            showLoading("loadingScreen");
+            user.role = "USERADMIN";
+            const updateUser = await updateCart$(cartUserInfor.cartID ,user , cartUserInfor);
+            if (updateUser) {
+                cartUserInfor = updateUser;
+            }
+            await editAccount$(user.idUser, user);
+
+            displayWindowAlertAndReload(user);
+        }
+        else if (roleSelected == "OWNER") {
+            showLoading("loadingScreen");
+            user.role = "OWNER";
+
+            const updateUser = await updateCart$(cartUserInfor.cartID ,user , cartUserInfor);
+            if (updateUser) {
+                cartUserInfor = updateUser;
+            }
+            await editAccount$(user.idUser, user);
+            
+            displayWindowAlertAndReload(user);
+        }
+        
+    } catch (error) {
+        console.log("Change role account: ", error);
+    }
+}
+
+function displayWindowAlertAndReload(user) {
+    hideLoading('loadingScreen');
+
+    setTimeout(() => {
+        window.alert(`Edit Role User: ${user.username} succeed !!`);
+        return location.reload();
+    }, 100);
+}
+
+function displayUserPassword(passwordHidden, userPassword) {
+    if (passwordHidden.textContent == "*****") {
+        passwordHidden.textContent = userPassword;
     }
     else {
-        roleDOM.style.display = "block";
+        passwordHidden.textContent = "*****";
     }
 }
 
@@ -138,6 +185,11 @@ window.findUserName = function findUserName(event) {
     }
 }
 
+
+function filterUserLogedIn() {
+    return listUser.filter((users) => users.username != userLogedIn.user.username);
+}
+
 window.createCodeRoles = function createCodeRoles() {
     window.location.href = `../createRole/createRole.html${postCartIDToParam(userLogedIn.cartID)}`;
 }
@@ -148,6 +200,11 @@ window.back = function back() {
 
 function filterUsername(usernameInput) {
     return listUser.filter((users) => users.username.toLowerCase().includes(usernameInput));
+}
+
+function getCartUser(usernameDOM) {
+    return listCart.find((users) => users.user.username == usernameDOM
+    )
 }
 
 function editAccount(userID) {

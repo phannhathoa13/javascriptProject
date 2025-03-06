@@ -7,7 +7,7 @@ import {
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import Product from "../../../../models/product.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
-import { postCartIdAndProductContainer } from "../../../../routes/productRoutes.js";
+import { postCartIDAndProductIDToParam } from "../../../../routes/productRoutes.js";
 import { isValidImageUrl } from "../../../../validation/imageValidation.js";
 
 const listProduct = await fetchProductAPI();
@@ -45,7 +45,7 @@ function displayProduct() {
             const buttonEditDOM = document.createElement("button");
             buttonEditDOM.textContent = "Edit";
             buttonEditDOM.onclick = () => {
-                window.location.href = `../editPage/editPage.html${postCartIdAndProductContainer(userLogedIn.cartID, products.id, products)}`;
+                window.location.href = `../editPage/editPage.html${postCartIDAndProductIDToParam(userLogedIn.cartID, products.id)}`;
             };
 
             const buttonRemoveDOM = document.createElement("button");
@@ -106,11 +106,7 @@ document.getElementById("createProduct").addEventListener("submit", async functi
                         return;
                     }
                     if (!validateImageSize(file)) {
-                        window.alert("Your image can't larger than 75KB");
-                        return;
-                    }
-                    if (isImageProductExisted(base64String)) {
-                        window.alert("The image you already have");
+                        window.alert("Your image can't larger than 50KB");
                         return;
                     }
                     if (validateValueInput(product)) {
@@ -143,7 +139,7 @@ window.viewImage = function viewImage(event) {
             return;
         }
         else if (!validateImageSize(file)) {
-            window.alert("Your image can't larger than 75KB");
+            window.alert("Your image can't larger than 50KB");
             previewImgDOM.src = lastImgPreviewDOM;
             fileFather.value = "";
             return;
@@ -174,17 +170,22 @@ function createProductObject(base64String) {
 
 function validateValueInput(product) {
     const productExisted = getProductExisted(product.productName);
-    const productName = product.productName;
+    const productNameValue = product.productName;
     const productAmount = product.amount;
     const productPrice = product.price;
     if (productExisted) {
         hideLoading("loadingScreenDOM");
-        window.alert(`${productExisted.productName} is existed`);
+        window.alert(`${productExisted.productNameValue} is existed`);
         return false;
     }
-    else if (!productName) {
+    else if (!productNameValue) {
         hideLoading("loadingScreenDOM");
         window.alert("Please enter the product name");
+        return false;
+    }
+    else if (!validateProductNameInput(productNameValue)){
+        hideLoading("loadingScreenDOM");
+        window.alert("The product name is not valid");
         return false;
     }
     else if (!productAmount) {
@@ -212,12 +213,16 @@ function validateValueInput(product) {
     }
 }
 
+function validateProductNameInput(productNameInput) {
+    return /\w+/g.test(productNameInput)
+}
+
 function isImageProductExisted(imageProductDOM) {
     return listProduct.some((products) => products.imageProduct == imageProductDOM)
 }
 
 function validateImageSize(file) {
-    const maxSizeInBytes = 75 * 1024;
+    const maxSizeInBytes = 50 * 1024;
     if (file.size > maxSizeInBytes) {
         return false;
     }

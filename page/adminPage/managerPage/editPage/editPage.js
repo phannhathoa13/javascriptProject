@@ -8,9 +8,11 @@ import { isValidImageUrl } from "../../../../validation/imageValidation.js";
 
 
 const listProduct = await fetchProductAPI();
-const getProductInParam = getValueInQuerryParam('product');
+
+const getProductID = getValueInQuerryParam('productId');
+const productEditting = getProduct(getProductID);
+
 const fileFather = document.getElementById('fileInput');
-fileFather.style.display = "none";
 
 const imageProductDOM = document.getElementById('previewImg');
 imageProductDOM.style.margin = "5px";
@@ -33,12 +35,12 @@ function displayProductToInput() {
         const amountInput = document.getElementById('amount');
         const priceInput = document.getElementById('price');
 
-        imageProductDOM.src = getProductInParam.imageProduct;
-        productNameInput.value = getProductInParam.productName;
-        amountInput.value = getProductInParam.amount;
-        priceInput.value = getProductInParam.price;
+        imageProductDOM.src = productEditting.imageProduct;
+        productNameInput.value = productEditting.productName;
+        amountInput.value = productEditting.amount;
+        priceInput.value = productEditting.price;
 
-        // previusImage = imageProductDOM.src;
+        previusImage = imageProductDOM.src;
 
     } catch (error) {
         console.log("display product get eroor", error);
@@ -52,6 +54,7 @@ window.viewImage = function viewImage(event) {
     const file = event.target.files[0];
     const reader = new FileReader();
     const previewImgDOM = document.getElementById('previewImg');
+    const imageDefaultProduct = productEditting.imageProduct
     reader.readAsDataURL(file);
     reader.onload = () => {
         const base64String = reader.result;
@@ -62,12 +65,12 @@ window.viewImage = function viewImage(event) {
             return;
         }
         else if (!validateImageSize(file)) {
-            window.alert("Your image can't larger than 75KB");
+            window.alert("Your image can't larger than 50KB");
             fileFather.value = "";
             previewImgDOM.src = previusImage;
             return;
         }
-        else if (isImageProductExisted(base64String)) {
+        else if (isImageProductExisted(base64String) && base64String != imageDefaultProduct) {
             window.alert("Your image is existed");
             fileFather.value = "";
             previewImgDOM.src = previusImage;
@@ -88,6 +91,7 @@ document.getElementById('editValue').addEventListener('submit', async function (
         const file = document.getElementById("fileInput").files[0];
         const imageDOM = imageProductDOM.src;
         const reader = new FileReader();
+        const imageDefaultProduct = productEditting.imageProduct
         if (!imageDOM) {
             window.alert("Please choose the image!");
             return;
@@ -97,7 +101,6 @@ document.getElementById('editValue').addEventListener('submit', async function (
                 const product = createProductObject(imageDOM);
                 if (validateInput(product)) {
                     await updateProduct(getProductId, product);
-                    hideLoading("loadingScreenDOM");
                     setTimeout(() => {
                         window.alert("edit successed");
                         window.location.href = `../producctManager/productManager.html${postCartIDToParam(userLogedIn.cartID)}`;
@@ -114,24 +117,20 @@ document.getElementById('editValue').addEventListener('submit', async function (
                         return;
                     }
                     if (!validateImageSize(file)) {
-                        window.alert("Your image can't larger than 75KB");
-                        return;
-                    }
-                    if (isImageProductExisted(base64String)) {
-                        window.alert("The image you already have");
+                        window.alert("Your image can't larger than 50KB");
                         return;
                     }
                     if (validateInput(product)) {
                         await updateProduct(getProductId, product);
                         hideLoading("loadingScreenDOM");
+
                         setTimeout(() => {
                             window.alert("edit successed");
                             window.location.href = `../producctManager/productManager.html${postCartIDToParam(userLogedIn.cartID)}`;;
-                        }, 100);
+                        }, 300);
                     }
                 }
             }
-
         }
     } catch (error) {
         console.log("Edit product get error", error);
@@ -160,6 +159,11 @@ function validateInput(product) {
         window.alert("Please enter the product name");
         return false;
     }
+    else if (!validateProductNameInput(productNameDOM)) {
+        hideLoading("loadingScreenDOM");
+        window.alert("The product name is not valid");
+        return false;
+    }
     else if (productExisted) {
         hideLoading("loadingScreenDOM");
         window.alert("The product name is existed");
@@ -186,15 +190,17 @@ function validateInput(product) {
         return false;
     }
     else {
-        hideLoading("loadingScreenDOM");
         return true;
     }
 }
 
+function validateProductNameInput(productNameInput) {
+    return /\w+/g.test(productNameInput)
+}
 
 
 function validateImageSize(file) {
-    const maxSizeInBytes = 75 * 1024;
+    const maxSizeInBytes = 50 * 1024;
     if (file.size > maxSizeInBytes) {
         return false;
     }
@@ -203,8 +209,12 @@ function validateImageSize(file) {
     }
 }
 
+function getProduct(productIdInParam) {
+    return listProduct.find((products) => products.id == productIdInParam);
+}
+
 function getProductExisted(productNameOnInput) {
-    return listProduct.find((products) => products.productName == productNameOnInput && products.id != getProductInParam.id)
+    return listProduct.find((products) => products.productName == productNameOnInput && products.id != productEditting.id)
 }
 
 function isImageProductExisted(imageInput) {

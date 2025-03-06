@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../../../../feautureReuse/loadingScreen.css">
+    <link rel="stylesheet" href="../editPage/editPage.css">
     <title>Edit Page</title>
 </head>
 
@@ -14,7 +15,7 @@
         <div class="spinner"></div>
     </div>
     <div>
-        <input type="file" id="fileInput" accept="image/*" onchange="viewImage(event)" />
+        <input type="file" id="fileInput" class="fileInput" accept="image/*" onchange="viewImage(event)" />
         <button onclick="chooseFile()">Choose File</button>
     </div>
     <form id="editValue">
