@@ -41,17 +41,35 @@ window.findProductName = function findProductName(event) {
   const productNameInput = event.target.value.toLowerCase();
   const orderHistory = getOrderHistory();
 
+  const startDateValue = document.getElementById('startDate').value;
+  const endDateValue = document.getElementById('endDate').value;
+
+  const formatStartDate = new Date(startDateValue).toDateString();
+  const formatEndDate = new Date(endDateValue).toDateString();
+
   const productSimilar = getProductSimilarInput(productNameInput);
-  if (productNameInput == "") {
+  const orderByDate = filterOrdersByDate(formatStartDate, formatEndDate);
+  const orderExistInDate = getThatProductExistInDate(formatStartDate, formatEndDate, productSimilar);
+
+  if (productNameInput == "" && !startDateValue && !endDateValue) {
     dateOrderDOM.innerHTML = "";
     displayOrderContainerProducts(orderHistory);
   }
-  else if (!productSimilar) {
+  else if (productNameInput == "" && startDateValue && endDateValue) {
     dateOrderDOM.innerHTML = "";
+    displayOrderContainerProducts(orderByDate);
   }
-  else {
+  else if (!productSimilar && startDateValue && endDateValue) {
+    dateOrderDOM.innerHTML = "";
+    displayOrderContainerProducts(orderByDate);
+  }
+  else if (productSimilar && !startDateValue && !endDateValue) {
     dateOrderDOM.innerHTML = "";
     displayOrderContainerProducts(productSimilar);
+  }
+  else if (orderExistInDate) {
+    dateOrderDOM.innerHTML = "";
+    displayOrderContainerProducts(orderExistInDate);
   }
 }
 

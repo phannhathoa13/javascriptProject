@@ -15,9 +15,6 @@ function displayListUser() {
     displayListUserDOM(listAccount$);
 }
 
-console.log(listCart);
-
-
 async function displayListUserDOM(listUserDOM) {
     try {
         showLoading("loadingScreen");
@@ -83,6 +80,7 @@ async function createRoleDropDown(userDOM, user) {
 
     const roleSelected = document.createElement("select");
     roleSelected.style.marginLeft = "5px";
+    roleSelected.id = "roles";
 
     const firstRole = document.createElement("option");
     firstRole.textContent = `Role: ${user.role}`;
@@ -100,52 +98,58 @@ async function createRoleDropDown(userDOM, user) {
     roleSelected.appendChild(roleAdmin);
     roleSelected.appendChild(roleOwner);
     roleSelected.appendChild(roleCustomer);
+
     userDOM.appendChild(roleSelected);
 
-    roleSelected.onclick = () => {
-         changeRoleAccount(roleSelected.value, user);
+    roleSelected.onchange = () => {
+        changeRoleAccount(roleSelected.value, user);
     }
+
 }
 
 async function changeRoleAccount(roleSelected, user) {
     try {
-        let cartUserInfor = getCartUser(user.username);
-        if (roleSelected == "CUSTOMER") {
-            showLoading("loadingScreen");
-            user.role = "CUSTOMER";
+        if (user.role == roleSelected) {
+            window.alert(`The user: " ${user.username} " is already have this role`);
+            return;
+        } else {
+            let cartUserInfor = getCartUser(user.username);
+            if (roleSelected == "CUSTOMER") {
+                showLoading("loadingScreen");
+                user.role = "CUSTOMER";
 
-            const updateUser = await updateCart$(cartUserInfor.cartID ,user , cartUserInfor);
-            if (updateUser) {
-                cartUserInfor = updateUser;
+                const updateUser = await updateCart$(cartUserInfor.cartID, user, cartUserInfor);
+                if (updateUser) {
+                    cartUserInfor = updateUser;
+                }
+                await editAccount$(user.idUser, user);
+
+                displayWindowAlertAndReload(user);
             }
-            await editAccount$(user.idUser, user);
+            else if (roleSelected == "USERADMIN") {
+                showLoading("loadingScreen");
+                user.role = "USERADMIN";
+                const updateUser = await updateCart$(cartUserInfor.cartID, user, cartUserInfor);
+                if (updateUser) {
+                    cartUserInfor = updateUser;
+                }
+                await editAccount$(user.idUser, user);
 
-            displayWindowAlertAndReload(user);
-        }
-        else if (roleSelected == "USERADMIN") {
-            showLoading("loadingScreen");
-            user.role = "USERADMIN";
-            const updateUser = await updateCart$(cartUserInfor.cartID ,user , cartUserInfor);
-            if (updateUser) {
-                cartUserInfor = updateUser;
+                displayWindowAlertAndReload(user);
             }
-            await editAccount$(user.idUser, user);
+            else if (roleSelected == "OWNER") {
+                showLoading("loadingScreen");
+                user.role = "OWNER";
 
-            displayWindowAlertAndReload(user);
-        }
-        else if (roleSelected == "OWNER") {
-            showLoading("loadingScreen");
-            user.role = "OWNER";
+                const updateUser = await updateCart$(cartUserInfor.cartID, user, cartUserInfor);
+                if (updateUser) {
+                    cartUserInfor = updateUser;
+                }
+                await editAccount$(user.idUser, user);
 
-            const updateUser = await updateCart$(cartUserInfor.cartID ,user , cartUserInfor);
-            if (updateUser) {
-                cartUserInfor = updateUser;
+                displayWindowAlertAndReload(user);
             }
-            await editAccount$(user.idUser, user);
-            
-            displayWindowAlertAndReload(user);
         }
-        
     } catch (error) {
         console.log("Change role account: ", error);
     }
@@ -155,8 +159,8 @@ function displayWindowAlertAndReload(user) {
     hideLoading('loadingScreen');
 
     setTimeout(() => {
-        window.alert(`Edit Role User: ${user.username} succeed !!`);
-        return location.reload();
+        window.alert(`Edit Role User: " ${user.username} " succeed !!`);
+        location.reload();
     }, 100);
 }
 

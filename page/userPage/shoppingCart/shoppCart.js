@@ -1,15 +1,17 @@
 import { addProductToCartId, fetchCartFromUserLogedIn } from "../../../controllers/cartControllers.js";
+import { fetchListOrder } from "../../../controllers/orderControllers.js";
 import { deleteProduct$, fetchProductAPI } from "../../../controllers/productControllers.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import Cart from "../../../models/cartModels.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
 const getListProduct = await fetchProductAPI();
-
+const listOrder = await fetchListOrder();
 
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
 displayListProduct();
 checkRoleUserLogedIn();
+
 
 async function displayListProduct() {
     try {
@@ -19,7 +21,8 @@ async function displayListProduct() {
         const buttonContainer = document.getElementById('buttonContainer');
         buttonContainer.style.display = "flex";
 
-        getListProduct.forEach(products => {
+        getListProduct.forEach((products) => {
+
             const productDivDOM = document.createElement("div");
             productDivDOM.style.display = "flex";
 
@@ -50,6 +53,7 @@ async function displayListProduct() {
                 productDivDOM.appendChild(productsDOM);
             }
         });
+
     } catch (error) {
         console.log("loading list Product error: ", error);
     }
@@ -72,22 +76,14 @@ function checkRoleUserLogedIn() {
         accountsManagerButtonDOM.style.display = "block";
         productsManagerButtonDOM.style.display = "block";
         return;
-    }if (roleUserLogedIn == "USERADMIN"){
+    } if (roleUserLogedIn == "USERADMIN") {
         productsManagerButtonDOM.style.display = "block";
     }
-     else {
+    else {
         accountsManagerButtonDOM.style.display = "none";
         productsManagerButtonDOM.style.display = "none";
 
         return;
-    }
-
-   
-
-    if (roleUserLogedIn == "USERADMIN" || roleUserLogedIn == "OWNER") {
-    }
-    else {
-        productsManagerButtonDOM.style.display = "none";
     }
 }
 
@@ -153,7 +149,6 @@ async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM, imag
         console.error(error);
     }
 }
-
 
 
 function productExistedInCart(nameProductDOM) {
