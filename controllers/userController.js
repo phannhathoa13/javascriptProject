@@ -29,7 +29,7 @@ async function registerAccountUser(user) {
     }
 }
 
-async function editAccount$(userID,user) {
+async function editAccount$(userID, user) {
     try {
         const reponse = await fetch(`${userApiURL}/${userID}`, {
             method: "PUT",
@@ -51,7 +51,7 @@ async function editAccount$(userID,user) {
     }
 }
 
-async function editRoleAccount$(userID,user,role) {
+async function editRoleAccount$(userID, user, role) {
     try {
         const reponse = await fetch(`${userApiURL}/${userID}`, {
             method: "PUT",
@@ -74,7 +74,7 @@ async function editRoleAccount$(userID,user,role) {
 }
 
 
-async function removeAccount(userID) {
+async function removeAccount$(userID) {
     try {
         const reponse = await fetch(`${userApiURL}/${userID}/`, {
             method: "DELETE",
@@ -90,4 +90,4 @@ async function removeAccount(userID) {
 
 
 
-export { fetchUserAPI, removeAccount, registerAccountUser, editAccount$, editRoleAccount$ };
+export { fetchUserAPI, removeAccount$, registerAccountUser, editAccount$, editRoleAccount$ };

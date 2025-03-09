@@ -57,28 +57,29 @@ window.findProductName = function findProductName(event) {
   }
   else if (productNameInput == "" && startDateValue && endDateValue) {
     dateOrderDOM.innerHTML = "";
-    displayOrderContainerProducts(orderByDate);
+    displayProductInforDOM(orderByDate);
   }
   else if (!productSimilar && startDateValue && endDateValue) {
     dateOrderDOM.innerHTML = "";
-    displayOrderContainerProducts(orderByDate);
+    displayProductInforDOM(orderByDate);
   }
   else if (productSimilar && !startDateValue && !endDateValue) {
     dateOrderDOM.innerHTML = "";
-    displayOrderContainerProducts(productSimilar);
+    displayProductInforDOM(productSimilar);
   }
   else if (orderExistInDate) {
     dateOrderDOM.innerHTML = "";
-    displayOrderContainerProducts(orderExistInDate);
+    displayProductInforDOM(orderExistInDate);
   }
 }
 
 function getProductSimilarInput(productNameInput) {
   const orderHistory = getOrderHistory();
-  return orderHistory.filter((order) => order.cartList.some((products) => products.productName.toLowerCase() == productNameInput.toLowerCase()))
+  return orderHistory.filter((order) => order.cartList.some((products) => products.productName.toLowerCase().includes(productNameInput.toLowerCase())))
 }
 
 window.findDate = function findDate() {
+  const orderHistory = getOrderHistory();
   const startDateValue = document.getElementById('startDate').value;
   const endDateValue = document.getElementById('endDate').value;
 
@@ -86,30 +87,39 @@ window.findDate = function findDate() {
   const formatEndDate = new Date(endDateValue).toDateString();
 
   const productNameInput = document.getElementById('findProductNameId').value;
-
   if (startDateValue && endDateValue) {
     const productSimilar = getProductSimilarInput(productNameInput);
     const orderByDate = filterOrdersByDate(formatStartDate, formatEndDate);
-
     const orderExistInDate = getThatProductExistInDate(formatStartDate, formatEndDate, productSimilar);
 
     if (productNameInput) {
-      if (!orderByDate) {
+      if (!orderByDate || orderByDate.length == 0) {
         dateOrderDOM.innerHTML = "";
+        window.alert("You don't have any order");
       }
-      else if (!orderExistInDate) {
+      else if (!orderExistInDate || orderExistInDate.length == 0) {
         dateOrderDOM.innerHTML = "";
+        window.alert("You don't have any order");
       }
       else if (orderExistInDate) {
         dateOrderDOM.innerHTML = "";
-        displayOrderContainerProducts(orderExistInDate)
+        displayProductInforDOM(orderExistInDate);
       }
     }
     else {
-      if (orderByDate) {
+      if (!orderByDate || orderByDate.length == 0) {
         dateOrderDOM.innerHTML = "";
-        displayOrderContainerProducts(orderByDate)
+        window.alert("You don't have any order");
       }
+      else {
+        dateOrderDOM.innerHTML = "";
+        displayProductInforDOM(orderByDate)
+      }
+    }
+  }
+  else {
+    if (!productNameInput) {
+      displayOrderContainerProducts(orderHistory);
     }
   }
 }
@@ -202,6 +212,32 @@ function displayOrderContainerProducts(orderHistory) {
   finally {
     hideLoading("loadingScreen");
   }
+}
+
+function displayProductInforDOM(orderHistory) {
+  orderHistory.forEach((order) => {
+    var totalPrice = 0;
+    const productInforDOM = document.createElement("div");
+    productInforDOM.style.margin = "20px";
+    productInforDOM.style.display = "Flex";
+
+    const viewDetails = document.createElement("div");
+    viewDetails.textContent = "view details";
+    viewDetails.style.marginLeft = "10px";
+    viewDetails.style.cursor = "pointer";
+
+    order.cartList.forEach((products) => {
+      totalPrice += products.amount * products.price;
+      productInforDOM.textContent = `OrderID: ${order.orderID}, created At ${order.createdAt}, total price: ${totalPrice}$`;
+      productInforDOM.appendChild(viewDetails);
+      dateOrderDOM.appendChild(productInforDOM);
+
+      viewDetails.onclick = () => {
+        window.location.href = `../orderDetails/orderDetails.html${postCartIdAndOrderIDToParam(userLogedIn.cartID, order.orderID)}`;
+      }
+    })
+
+  })
 }
 
 function displayInforProduct(productsDOM) {

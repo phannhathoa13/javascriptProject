@@ -4,54 +4,85 @@ import { deleteProduct$, fetchProductAPI } from "../../../controllers/productCon
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import Cart from "../../../models/cartModels.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
-const getListProduct = await fetchProductAPI();
+const listProducts = await fetchProductAPI();
 const listOrder = await fetchListOrder();
 
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
 displayListProduct();
 checkRoleUserLogedIn();
+filterMostPurchasedProducts();
+function findTopSellingProducts() {
+    const listProductsInOrder = [];
+
+    listOrder.forEach((orders) => {
+        orders.cartList.forEach((products) => {
+            listProductsInOrder.push({
+                productName: products.productName,
+                amount: products.amount,
+                price: products.price,
+                imageProduct: products.imageProduct
+            })
+        })
+    })
+
+    const updatedListOrder = [];
+
+    listProductsInOrder.forEach((products) => {
+        const productsExisted = updatedListOrder.find((products_) => products_.productName == products.productName);
+        if (productsExisted) {
+            productsExisted.amount += products.amount;
+        }
+        else {
+            updatedListOrder.push(products);
+        }
+    })
+    const sortedProducts = updatedListOrder.sort((a, b) => b.amount - a.amount);
+    return sortedProducts.splice(0, 3);
+}
+
+function filterMostPurchasedProducts() {
+    const topSellingProducts = findTopSellingProducts();
+    return listProducts.filter((products) => {
+        const productsExisted = topSellingProducts.find((products_) => products_.productName == products.productName);
+        if (productsExisted) {
+            return products.productName != productsExisted.productName
+        }
+        return products
+    })
+}
 
 
 async function displayListProduct() {
     try {
         showLoading('loadingScreen');
-        const listProductDOM = document.getElementById('listProduct');
+        const topSellingProducts = findTopSellingProducts();
+        const nonTopSellingProducts = filterMostPurchasedProducts();
 
-        const buttonContainer = document.getElementById('buttonContainer');
-        buttonContainer.style.display = "flex";
+        topSellingProducts.forEach((products) => {
+            const bestSellerString = document.createElement("span");
+            bestSellerString.textContent = "(Best Seller)";
+            bestSellerString.style.color = "#FFA500";
+            bestSellerString.style.margin = "0 5px";
 
-        getListProduct.forEach((products) => {
+            const amountAndPriceInfor = document.createElement("span");
+            amountAndPriceInfor.textContent = `Amount: ${products.amount}, Price: ${products.price}$`;
 
-            const productDivDOM = document.createElement("div");
-            productDivDOM.style.display = "flex";
+            const productInforDOM = document.createElement("div");
+            productInforDOM.textContent = `Product: ${products.productName}`;
+            productInforDOM.style.placeContent = "center";
 
-            const productsDOM = document.createElement("div");
-            productsDOM.textContent = `${products.productName}, amount: ${products.amount}, price: ${products.price}$`;
-            productsDOM.style.placeContent = "center";
+            productInforDOM.appendChild(bestSellerString);
+            productInforDOM.appendChild(amountAndPriceInfor);
 
-            const imageProductDOM = document.createElement("img");
-            imageProductDOM.src = products.imageProduct;
-            imageProductDOM.style.width = "100px";
-            imageProductDOM.style.height = "60px";
-            imageProductDOM.style.margin = "10px";
+            displayProductsDOM(products, productInforDOM);
+        })
 
-            const buttonAddToCart = document.createElement("button");
-            buttonAddToCart.textContent = "ADD";
-            buttonAddToCart.style.margin = "10px";
-            buttonAddToCart.onclick = () => {
-                addToCart(products.productName, parseFloat(products.price), products.amount, products.imageProduct);
-            }
-            productsDOM.appendChild(buttonAddToCart);
-            if (products.amount == 0) {
-                productsDOM.remove();
-                deleteProduct$(products.id);
-            }
-            else {
-                listProductDOM.appendChild(productDivDOM);
-                productDivDOM.appendChild(imageProductDOM);
-                productDivDOM.appendChild(productsDOM);
-            }
+        nonTopSellingProducts.forEach((products) => {
+            const productInforDOM = document.createElement("div");
+            productInforDOM.textContent = `Product: ${products.productName}, Amount: ${products.amount}, Price: ${products.price}$`;
+            productInforDOM.style.placeContent = "center";
+            displayProductsDOM(products, productInforDOM);
         });
 
     } catch (error) {
@@ -59,6 +90,39 @@ async function displayListProduct() {
     }
     finally {
         hideLoading('loadingScreen');
+    }
+}
+
+function displayProductsDOM(products, productInforDOM) {
+    const listProductDOM = document.getElementById('listProduct');
+
+    const buttonContainer = document.getElementById('buttonContainer');
+    buttonContainer.style.display = "inline-block";
+
+    const productDivDOM = document.createElement("div");
+    productDivDOM.style.display = "flex";
+
+    const imageProductDOM = document.createElement("img");
+    imageProductDOM.src = products.imageProduct;
+    imageProductDOM.style.width = "100px";
+    imageProductDOM.style.height = "60px";
+    imageProductDOM.style.margin = "10px";
+
+    const buttonAddToCart = document.createElement("button");
+    buttonAddToCart.textContent = "ADD";
+    buttonAddToCart.style.margin = "10px";
+    buttonAddToCart.onclick = () => {
+        addToCart(products.productName, parseFloat(products.price), products.amount, products.imageProduct);
+    }
+    productInforDOM.appendChild(buttonAddToCart);
+    if (products.amount == 0) {
+        productInforDOM.remove();
+        deleteProduct$(products.id);
+    }
+    else {
+        listProductDOM.appendChild(productDivDOM);
+        productDivDOM.appendChild(imageProductDOM);
+        productDivDOM.appendChild(productInforDOM);
     }
 }
 
@@ -73,11 +137,11 @@ function checkRoleUserLogedIn() {
     productsManagerButtonDOM.style.margin = "5px";
 
     if (roleUserLogedIn == "OWNER") {
-        accountsManagerButtonDOM.style.display = "block";
-        productsManagerButtonDOM.style.display = "block";
+        accountsManagerButtonDOM.style.display = "inline-block";
+        productsManagerButtonDOM.style.display = "inline-block";
         return;
     } if (roleUserLogedIn == "USERADMIN") {
-        productsManagerButtonDOM.style.display = "block";
+        productsManagerButtonDOM.style.display = "inline-block";
     }
     else {
         accountsManagerButtonDOM.style.display = "none";
@@ -87,6 +151,9 @@ function checkRoleUserLogedIn() {
     }
 }
 
+window.accountAndPermissons = function accountAndPermissons() {
+    window.location.href = `../accountAndPermissions/accountAndPermissions.html${postCartIDToParam(userLogedIn.cartID)}`;
+}
 
 window.productsManager = function productsManager() {
     window.location.href = `../../adminPage/managerPage/producctManager/productManager.html${postCartIDToParam(userLogedIn.cartID)}`

@@ -1,5 +1,5 @@
-import { fetchCartFromApi, fetchCartFromUserLogedIn, updateCart$ } from "../../../../controllers/cartControllers.js";
-import { editAccount$, fetchUserAPI, removeAccount } from "../../../../controllers/userController.js";
+import { fetchCartFromApi, fetchCartFromUserLogedIn, removeCart$, updateCart$ } from "../../../../controllers/cartControllers.js";
+import { editAccount$, fetchUserAPI, removeAccount$ } from "../../../../controllers/userController.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
 import { postUserIDToParam } from "../../../../routes/userRoutes.js";
@@ -57,9 +57,13 @@ async function displayListUserDOM(listUserDOM) {
                 hideLoading('loadingScreen');
                 editAccount(users.idUser);
             }
-            removeButtonDOM.onclick = () => {
+            removeButtonDOM.onclick = async function () {
+                showLoading("loadingScreen");
+                const updatedUser = removeAccount$(users.idUser);
+                const upadtedCart = removeCart$(users.idUser);
+
+                await Promise.all([updatedUser, upadtedCart])
                 hideLoading('loadingScreen');
-                removeAccount(users.idUser);
 
                 setTimeout(() => {
                     window.alert("remove account succeed! ");
@@ -159,7 +163,7 @@ function displayWindowAlertAndReload(user) {
     hideLoading('loadingScreen');
 
     setTimeout(() => {
-        window.alert(`Edit Role User: " ${user.username} " succeed !!`);
+        window.alert(`Successfully updated the role of user: "${user.username}"`);
         location.reload();
     }, 100);
 }

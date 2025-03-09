@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../accountAndPermissions/accountAndPermissions.css">
+    <link rel="stylesheet" href="../../../feautureReuse/loadingScreen.css">
+    <title>Account And Permissions</title>
+</head>
+
+<body>
+    <h2>Account & Permissions</h2>
+    <button onclick="back()">Back</button>
+    <button onclick="editAccount()">Edit Account</button>
+    <div id="loadingScreen" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    <div id="accountInforContainer">
+        <div class="account-infor">Role: <span id="role"></span></div>
+
+        <div class="account-infor">Username: <span id="username"></span></div>
+
+        <div class="account-infor">Password: <span id="password"></span>
+            <input type="text" id="passwordInput" placeholder="New Password" oninput="validateInput(event)">
+        </div>
+
+        <div id="passwordWarning"></div>
+
+        <div class="account-infor" id="confirmPassword">Confirm Password:
+            <input type="text" id="confirmPasswordInput" placeholder="Confirm Password" oninput="validateInput(event)">
+        </div>
+
+        <div id="confirmPasswordWarning"></div>
+
+        <div class="account-infor">Email: <span id="email"></span>
+            <input type="email" id="emailInput" placeholder="New Email" oninput="validateInput(event)">
+        </div>
+
+        <div id="emailWarning"></div>
+
+        <div class="account-infor">Created At: <span id="createdAt"></span></div>
+
+        <button id="buttonSave" onclick="save()">Save</button>
+    </div>
+
+
+
+    <script type="module" src="../accountAndPermissions/accountAndPermissions.js"></script>
+</body>
+
+</html>

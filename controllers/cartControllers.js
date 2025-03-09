@@ -81,7 +81,7 @@ async function updateCartInAccount(cartID, userLogedIn, updatedProduct, updatedT
     }
 }
 
-async function updateCart$(cartID, userInfor,cartInfor) {
+async function updateCart$(cartID, userInfor, cartInfor) {
     try {
         const reponse = await fetch(`${cartApiUrl}/${cartID}`, {
             method: "PUT",
@@ -101,4 +101,21 @@ async function updateCart$(cartID, userInfor,cartInfor) {
         console.log(`update new Value In User Cart error:`, error);
     }
 }
-export { registerCartUser, fetchCartFromUserLogedIn, addProductToCartId, fetchCartFromApi, updateCartInAccount,updateCart$ }
+
+async function removeCart$(cartID) {
+    try {
+        const reponse = await fetch(`${cartApiUrl}/${cartID}/`, {
+            method: "DELETE",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        return await reponse.json();
+    } catch (error) {
+        console.error(`remove account error: ${error}`);
+    }
+}
+
+
+
+export { registerCartUser, removeCart$, fetchCartFromUserLogedIn, addProductToCartId, fetchCartFromApi, updateCartInAccount, updateCart$ }
