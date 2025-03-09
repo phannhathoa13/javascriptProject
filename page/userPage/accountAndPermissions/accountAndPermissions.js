@@ -33,7 +33,7 @@ let isConfirmPasswordValid = false;
 let isEmailValid = false;
 
 console.log(userLogedIn);
-const accountInfor = userLogedIn.user;
+const userAccountInfor = userLogedIn.user;
 
 displayAccount()
 
@@ -45,20 +45,20 @@ function displayAccount() {
     accountInforContainerDOM.style.marginTop = "10px";
 
     const roleDOM = document.getElementById('role');
-    roleDOM.innerHTML = accountInfor.role;
+    roleDOM.innerHTML = userAccountInfor.role;
 
-    usernameDOM.innerHTML = accountInfor.username;
+    usernameDOM.innerHTML = userAccountInfor.username;
 
     passwordDOM.style.cursor = "pointer";
     passwordDOM.innerHTML = "*****";
     passwordDOM.onclick = () => {
-        displayPassword(passwordDOM, accountInfor.password);
+        displayPassword(passwordDOM, userAccountInfor.password);
     }
 
-    emailDOM.innerHTML = accountInfor.email;
+    emailDOM.innerHTML = userAccountInfor.email;
 
     const createdAtDOM = document.getElementById('createdAt');
-    createdAtDOM.innerHTML = accountInfor.createdAt;
+    createdAtDOM.innerHTML = userAccountInfor.createdAt;
 
     displayInputAndInforDOM("none", "inline-block");
     hideLoading('loadingScreen');
@@ -66,7 +66,6 @@ function displayAccount() {
 }
 
 function displayInputAndInforDOM(string, inforDOMDisplay) {
-
     passwordInputDOM.style.display = string;
     confirmPasswordDOM.style.display = string;
     emailInputDOM.style.display = string;
@@ -87,24 +86,19 @@ function displayPassword(passwordDOM, accountPassword) {
 
 window.editAccount = function editAccount() {
     displayInputAndInforDOM("inline-block", "none");
-    passwordInputDOM.value = accountInfor.password;
-    confirmPasswordInputDOM.value = accountInfor.password;
-    emailInputDOM.value = accountInfor.email;
-
-    const passwordInputValue = passwordInputDOM.value;
-    const emailInputValue = emailInputDOM.value;
-
-    buttonSaveDOM.disabled = false;
+    passwordInputDOM.value = userAccountInfor.password;
+    confirmPasswordInputDOM.value = userAccountInfor.password;
+    emailInputDOM.value = userAccountInfor.email;
 }
 
 window.save = async function save() {
     showLoading('loadingScreen');
     const userInfor = new User(
-        accountInfor.username,
+        userAccountInfor.username,
         passwordInputDOM.value,
         emailInputDOM.value,
-        accountInfor.createdAt,
-        accountInfor.role,
+        userAccountInfor.createdAt,
+        userAccountInfor.role,
     )
     const updateUser = editAccount$(userLogedIn.cartID, userInfor);
     const updatedCart = updateCart$(userLogedIn.cartID, userInfor, userLogedIn);
@@ -117,106 +111,97 @@ window.save = async function save() {
 
 }
 
-
 window.validateInput = function validateInput(event) {
     const passwordInputValue = passwordInputDOM.value;
     const confirmPasswordInputValue = confirmPasswordInputDOM.value;
 
     const targetDOM = event.target;
-    const userInforInput = event.target.value;
+    const inputValue = event.target.value;
 
     if (targetDOM == passwordInputDOM) {
-        validatePassword(passwordWarningDOM, userInforInput);
-        if (passwordInputValue != confirmPasswordInputValue) {
-            errorMassage(confirmPasswordInputDOM, confirmPasswordWarningDOM);
-            confirmPasswordWarningDOM.innerHTML = "Your password and confirm password must the same";
-            isPasswordValid = false;
-            return;
-        }
-        else {
-            confirmPasswordWarningDOM.innerHTML = "";
-            confirmPasswordInputDOM.style.border = "1px solid black";
-            isPasswordValid = true;
-            return;
-        }
+        validatePassword(inputValue);
+        console.log(isPasswordValid, "password");
+        
     }
     if (targetDOM == confirmPasswordInputDOM) {
-        validateConfirmPassword(userInforInput, passwordInputValue, confirmPasswordWarningDOM);
+        validateConfirmPassword(inputValue, passwordInputValue);
+        console.log(isConfirmPasswordValid, "confirm password");
     }
     if (targetDOM == emailInputDOM) {
-        validateEmail(userInforInput, emailWarningDOM);
+        validateEmail(inputValue);
+        console.log(isEmailValid, "email");
     }
 }
 
-function validatePassword(passwordWarningDOM, userInforInput) {
-    if (!userInforInput) {
+function validatePassword(inputValue) {
+    if (!inputValue) {
         errorMassage(passwordInputDOM, passwordWarningDOM);
         passwordWarningDOM.innerHTML = "Your password is empty";
-        return;
+        isPasswordValid = false;
     }
-    else if (!validationPassword(userInforInput)) {
+    else if (!validationPassword(inputValue)) {
         errorMassage(passwordInputDOM, passwordWarningDOM);
         passwordWarningDOM.innerHTML = "Your password must have 1 special character, 1 uppercase letter and must longer then 8 character";
-        return;
+        isPasswordValid = false;
     }
     else {
         passwordWarningDOM.innerHTML = "";
         passwordInputDOM.style.border = "1px solid black";
         isPasswordValid = true;
         isAccountInforVaild();
-        return;
     }
 }
 
-function validateConfirmPassword(userInforInput, passwordInputValue, confirmPasswordWarningDOM) {
-    if (!userInforInput) {
+function validateConfirmPassword(inputValue, passwordInputValue) {
+    if (!inputValue) {
         errorMassage(confirmPasswordInputDOM, confirmPasswordWarningDOM);
         confirmPasswordWarningDOM.innerHTML = "Your confirm password is empty";
-        return;
+        isConfirmPasswordValid = false;
     }
-    else if (userInforInput != passwordInputValue) {
+    else if (inputValue != passwordInputValue) {
         errorMassage(confirmPasswordInputDOM, confirmPasswordWarningDOM);
         confirmPasswordWarningDOM.innerHTML = "Your password and confirm password must the same";
-        return;
+        isConfirmPasswordValid = false;
     }
     else {
         confirmPasswordWarningDOM.innerHTML = "";
         confirmPasswordInputDOM.style.border = "1px solid black";
         isConfirmPasswordValid = true;
         isAccountInforVaild();
-        return
     }
 }
 
 
-function validateEmail(userInforInput, emailWarningDOM) {
-    if (!userInforInput) {
+function validateEmail(inputValue) {
+    if (!inputValue) {
         errorMassage(emailInputDOM, emailWarning);
         emailWarningDOM.innerHTML = "Your email is empty";
-        return;
+        isEmailValid = false;
     }
-    else if (!validationEmail(userInforInput)) {
+    else if (!validationEmail(inputValue)) {
         errorMassage(emailInputDOM, emailWarningDOM);
         emailWarningDOM.innerHTML = "Your email is not valid";
-        return;
+        isEmailValid = false;
     }
-    else if (isEmailExisted(userInforInput)) {
+    else if (isEmailExisted(inputValue)) {
         errorMassage(emailInputDOM, emailWarningDOM);
         emailWarningDOM.innerHTML = "Your email is existed !, please try new one ";
-        return;
+        isEmailValid = false;
     }
     else {
         emailWarningDOM.innerHTML = "";
         emailInputDOM.style.border = "1px solid black";
         isEmailValid = true;
         isAccountInforVaild();
-        return;
     }
 }
 
 function isAccountInforVaild() {
     if (isPasswordValid && isConfirmPasswordValid && isEmailValid) {
         buttonSaveDOM.disabled = false;
+    }
+    else if (!isPasswordValid || !isConfirmPasswordValid || !isEmailValid) {
+        buttonSaveDOM.disabled = true;
     }
 }
 
