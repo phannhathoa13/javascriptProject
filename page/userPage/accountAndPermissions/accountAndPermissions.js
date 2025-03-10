@@ -1,4 +1,5 @@
 import { fetchCartFromUserLogedIn, updateCart$ } from "../../../controllers/cartControllers.js";
+import { fetchListRequestRole$, requestRole$ } from "../../../controllers/rolesControllers.js";
 import { editAccount$, fetchUserAPI } from "../../../controllers/userController.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import User from "../../../models/user.js";
@@ -6,39 +7,42 @@ import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRo
 import { validationEmail, validationPassword } from "../../../validation/loginValidation.js";
 
 const listUser = await fetchUserAPI();
+const listRoleReuquested = await fetchListRequestRole$();
+
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
 
-const usernameDOM = document.getElementById('username');
 const passwordDOM = document.getElementById('password');
 const confirmPasswordDOM = document.getElementById('confirmPassword');
 const emailDOM = document.getElementById('email');
 
 const passwordInputDOM = document.getElementById('passwordInput');
-
 const confirmPasswordInputDOM = document.getElementById('confirmPasswordInput');
-
 const emailInputDOM = document.getElementById('emailInput');
+const requestRoleButtonDOM = document.getElementById('requestRole');
 
-const passwordWarningDOM = document.getElementById('passwordWarning');
-const confirmPasswordWarningDOM = document.getElementById('confirmPasswordWarning');
-const emailWarningDOM = document.getElementById('emailWarning');
-
-const buttonSaveDOM = document.getElementById('buttonSave');
-buttonSaveDOM.disabled = true;
+const listRoles = ["CUSTOMER", "USERADMIN", "OWNER"];
 
 
 let isPasswordValid = false;
 let isConfirmPasswordValid = false;
 let isEmailValid = false;
 
-console.log(userLogedIn);
 const userAccountInfor = userLogedIn.user;
+const userLogedInInformation = getUserID(userAccountInfor.username);
 
-displayAccount()
+displayAccount();
+checkRequestRole();
 
 function displayAccount() {
-    showLoading('loadingScreen');
+    showLoading('loadingScreenDOM');
+    const personDenied = getPersonDeniedRequest();
+    if (!(isUserRequestedRole(userLogedInInformation.idUser))) {
+        window.alert(`Your request role have been denined by user: ${personDenied}`);
+        localStorage.removeItem('personDeny');
+    }
+
+    const usernameDOM = document.getElementById('username');
 
     const accountInforContainerDOM = document.getElementById('accountInforContainer');
     accountInforContainerDOM.style.fontSize = "18px";
@@ -61,11 +65,61 @@ function displayAccount() {
     createdAtDOM.innerHTML = userAccountInfor.createdAt;
 
     displayInputAndInforDOM("none", "inline-block");
-    hideLoading('loadingScreen');
+    hideLoading('loadingScreenDOM');
 
 }
 
+window.requestRole = async function requestRole() {
+    // showLoading('loadingScreenDOM');
+    const roleCustomer = getRole("CUSTOMER");
+    const roleAdmin = getRole("USERADMIN");
+    const roleOwner = getRole("OWNER");
+
+    if (userLogedInInformation.role == roleCustomer) {
+        await requestRole$(userLogedInInformation, roleAdmin);
+        hideLoading('loadingScreenDOM');
+        setTimeout(() => {
+            window.alert("Request for permission has been sent");
+            location.reload();
+        }, 100);
+    }
+    if (userLogedInInformation.role == roleAdmin) {
+        await requestRole$(userLogedInInformation, roleOwner);
+        hideLoading('loadingScreenDOM');
+        setTimeout(() => {
+            window.alert("Request for permission has been sent");
+            location.reload();
+        }, 100);
+    }
+}
+
+function getRole(roleName) {
+    return listRoles.find((roles) => roles == roleName);
+}
+
+function checkRequestRole() {
+    const getRequest = getRequestRoleByUser();
+    if (isUserRequestedRole(userLogedInInformation.idUser)) {
+        requestRoleButtonDOM.textContent = "Pending";
+        requestRoleButtonDOM.style.background = "#eaea00";
+        requestRoleButtonDOM.style.border = "1px solid #53a45a";
+        requestRoleButtonDOM.style.color = "#000000";
+        requestRoleButtonDOM.onclick = () => {
+            window.alert("You have requested permission.");
+            return;
+        }
+    }
+    if (userLogedInInformation.role == getRequest.roleRequest) {
+        requestRoleButtonDOM.textContent = `Approved role: ${getRequest.roleRequest}`;
+        requestRoleButtonDOM.style.background = "green";
+        requestRoleButtonDOM.style.border = "1px solid #53a45a";
+        requestRoleButtonDOM.style.color = "#000000";
+        requestRoleButtonDOM.disabled = true;
+    }
+}
+
 function displayInputAndInforDOM(string, inforDOMDisplay) {
+    const buttonSaveDOM = document.getElementById('buttonSave');
     passwordInputDOM.style.display = string;
     confirmPasswordDOM.style.display = string;
     emailInputDOM.style.display = string;
@@ -89,60 +143,88 @@ window.editAccount = function editAccount() {
     passwordInputDOM.value = userAccountInfor.password;
     confirmPasswordInputDOM.value = userAccountInfor.password;
     emailInputDOM.value = userAccountInfor.email;
+    document.getElementById('editAcccountButton').style.display = "none";
+    requestRoleButtonDOM.style.display = "none";
 }
 
 window.save = async function save() {
-    showLoading('loadingScreen');
-    const userInfor = new User(
-        userAccountInfor.username,
-        passwordInputDOM.value,
-        emailInputDOM.value,
-        userAccountInfor.createdAt,
-        userAccountInfor.role,
-    )
-    const updateUser = editAccount$(userLogedIn.cartID, userInfor);
-    const updatedCart = updateCart$(userLogedIn.cartID, userInfor, userLogedIn);
-    await Promise.all([updateUser, updatedCart]);
-    hideLoading('loadingScreen');
-    setTimeout(() => {
-        window.alert("Account information updated successfully!");
-        location.reload();
-    }, 200);
-
+    showLoading('loadingScreenDOM');
+    if (!validatePassword(passwordInputDOM.value)) {
+        !isAccountInforVaild();
+        hideLoading('loadingScreenDOM');
+    }
+    if (!validateConfirmPassword(confirmPasswordInputDOM.value, passwordInputDOM.value)) {
+        !isAccountInforVaild();
+        hideLoading('loadingScreenDOM');
+    }
+    if (!validateEmail(emailInputDOM.value)) {
+        !isAccountInforVaild();
+        hideLoading('loadingScreenDOM');
+    }
+    if (!isAccountInforVaild()) {
+        window.alert("Please check your information agian");
+        hideLoading('loadingScreenDOM');
+    }
+    else {
+        const userInfor = new User(
+            userAccountInfor.username,
+            passwordInputDOM.value,
+            emailInputDOM.value,
+            userAccountInfor.createdAt,
+            userAccountInfor.role,
+        )
+        const updateUser = editAccount$(userLogedIn.cartID, userInfor);
+        const updatedCart = updateCart$(userLogedIn.cartID, userInfor, userLogedIn);
+        await Promise.all([updateUser, updatedCart]);
+        hideLoading('loadingScreenDOM');
+        setTimeout(() => {
+            window.alert("Account information updated successfully!");
+            window.location.href = `../loginPage/loginPage.html${postCartIDToParam(userLogedIn.cartID)}`
+        }, 200);
+    }
 }
 
-window.validateInput = function validateInput(event) {
-    const passwordInputValue = passwordInputDOM.value;
-    const confirmPasswordInputValue = confirmPasswordInputDOM.value;
 
+window.validateInput = function validateInput(event) {
     const targetDOM = event.target;
     const inputValue = event.target.value;
 
-    if (targetDOM == passwordInputDOM) {
-        validatePassword(inputValue);
-        console.log(isPasswordValid, "password");
-        
+    if (targetDOM == passwordInputDOM || targetDOM == confirmPasswordInputDOM) {
+        const passwordInputValue = passwordInputDOM.value;
+        if (targetDOM == passwordInputDOM) {
+            validatePassword(inputValue);
+            confirmPasswordInputDOM.value = "";
+        }
+        if (targetDOM == confirmPasswordInputDOM) {
+            validateConfirmPassword(inputValue, passwordInputValue);
+        }
     }
-    if (targetDOM == confirmPasswordInputDOM) {
-        validateConfirmPassword(inputValue, passwordInputValue);
-        console.log(isConfirmPasswordValid, "confirm password");
-    }
-    if (targetDOM == emailInputDOM) {
+    else if (targetDOM == emailInputDOM) {
         validateEmail(inputValue);
-        console.log(isEmailValid, "email");
     }
+
+
 }
 
 function validatePassword(inputValue) {
-    if (!inputValue) {
-        errorMassage(passwordInputDOM, passwordWarningDOM);
-        passwordWarningDOM.innerHTML = "Your password is empty";
-        isPasswordValid = false;
-    }
-    else if (!validationPassword(inputValue)) {
-        errorMassage(passwordInputDOM, passwordWarningDOM);
-        passwordWarningDOM.innerHTML = "Your password must have 1 special character, 1 uppercase letter and must longer then 8 character";
-        isPasswordValid = false;
+    const passwordWarningDOM = document.getElementById('passwordWarning');
+    if (inputValue != userAccountInfor.password) {
+        if (!inputValue) {
+            errorMassage(passwordInputDOM, passwordWarningDOM);
+            passwordWarningDOM.innerHTML = "Your password is empty";
+            isPasswordValid = false;
+        }
+        else if (!validationPassword(inputValue)) {
+            errorMassage(passwordInputDOM, passwordWarningDOM);
+            passwordWarningDOM.innerHTML = "Your password must have 1 special character, 1 uppercase letter and must longer then 8 character";
+            isPasswordValid = false;
+        }
+        else {
+            passwordWarningDOM.innerHTML = "";
+            passwordInputDOM.style.border = "1px solid black";
+            isPasswordValid = true;
+            isAccountInforVaild();
+        }
     }
     else {
         passwordWarningDOM.innerHTML = "";
@@ -153,6 +235,7 @@ function validatePassword(inputValue) {
 }
 
 function validateConfirmPassword(inputValue, passwordInputValue) {
+    const confirmPasswordWarningDOM = document.getElementById('confirmPasswordWarning');
     if (!inputValue) {
         errorMassage(confirmPasswordInputDOM, confirmPasswordWarningDOM);
         confirmPasswordWarningDOM.innerHTML = "Your confirm password is empty";
@@ -173,20 +256,29 @@ function validateConfirmPassword(inputValue, passwordInputValue) {
 
 
 function validateEmail(inputValue) {
-    if (!inputValue) {
-        errorMassage(emailInputDOM, emailWarning);
-        emailWarningDOM.innerHTML = "Your email is empty";
-        isEmailValid = false;
-    }
-    else if (!validationEmail(inputValue)) {
-        errorMassage(emailInputDOM, emailWarningDOM);
-        emailWarningDOM.innerHTML = "Your email is not valid";
-        isEmailValid = false;
-    }
-    else if (isEmailExisted(inputValue)) {
-        errorMassage(emailInputDOM, emailWarningDOM);
-        emailWarningDOM.innerHTML = "Your email is existed !, please try new one ";
-        isEmailValid = false;
+    const emailWarningDOM = document.getElementById('emailWarning');
+    if (inputValue != userAccountInfor.email) {
+        if (!inputValue) {
+            errorMassage(emailInputDOM, emailWarning);
+            emailWarningDOM.innerHTML = "Your email is empty";
+            isEmailValid = false;
+        }
+        else if (!validationEmail(inputValue)) {
+            errorMassage(emailInputDOM, emailWarningDOM);
+            emailWarningDOM.innerHTML = "Your email is not valid";
+            isEmailValid = false;
+        }
+        else if (isEmailExisted(inputValue)) {
+            errorMassage(emailInputDOM, emailWarningDOM);
+            emailWarningDOM.innerHTML = "Your email is existed !, please try new one ";
+            isEmailValid = false;
+        }
+        else {
+            emailWarningDOM.innerHTML = "";
+            emailInputDOM.style.border = "1px solid black";
+            isEmailValid = true;
+            isAccountInforVaild();
+        }
     }
     else {
         emailWarningDOM.innerHTML = "";
@@ -198,15 +290,31 @@ function validateEmail(inputValue) {
 
 function isAccountInforVaild() {
     if (isPasswordValid && isConfirmPasswordValid && isEmailValid) {
-        buttonSaveDOM.disabled = false;
+        return true;
     }
-    else if (!isPasswordValid || !isConfirmPasswordValid || !isEmailValid) {
-        buttonSaveDOM.disabled = true;
+    else {
+        return false;
     }
+}
+
+function getUserID(userNameLogedIn) {
+    return listUser.find((user) => user.username == userNameLogedIn);
 }
 
 function isEmailExisted(emailInput) {
     return listUser.some((user) => user.email == emailInput);
+}
+
+function isUserRequestedRole(userLogedInInformation) {
+    return listRoleReuquested.some((request) => request.idUser == userLogedInInformation)
+}
+
+function getRequestRoleByUser() {
+    return listRoleReuquested.find((request) => request.username == userLogedInInformation.username);
+}
+
+function getPersonDeniedRequest() {
+    return localStorage.getItem('personDeny');
 }
 
 function errorMassage(valueInput, textWarning) {

@@ -136,16 +136,24 @@ function checkRoleUserLogedIn() {
     const productsManagerButtonDOM = document.getElementById('productsManager');
     productsManagerButtonDOM.style.margin = "5px";
 
+    const roleAccessManagerDOM = document.getElementById('roleAccessManager');
+
     if (roleUserLogedIn == "OWNER") {
         accountsManagerButtonDOM.style.display = "inline-block";
         productsManagerButtonDOM.style.display = "inline-block";
+        roleAccessManagerDOM.style.display = "inline-block";
+
         return;
     } if (roleUserLogedIn == "USERADMIN") {
         productsManagerButtonDOM.style.display = "inline-block";
+        roleAccessManagerDOM.style.display = "inline-block";
+
     }
     else {
         accountsManagerButtonDOM.style.display = "none";
         productsManagerButtonDOM.style.display = "none";
+        roleAccessManagerDOM.style.display = "none";
+
 
         return;
     }
@@ -231,4 +239,8 @@ window.viewCart = function viewCart() {
 }
 window.logOut = function logOut() {
     window.location.href = "../loginPage/loginPage.html";
+}
+
+window.roleAccessManager = function roleAccessManager() {
+    window.location.href = `../../adminPage/managerPage/roleAccessPage/roleAccessPage.html${postCartIDToParam(userLogedIn.cartID)}`
 }

@@ -203,7 +203,7 @@ window.createCodeRoles = function createCodeRoles() {
 }
 
 window.back = function back() {
-    window.location.href = `../producctManager/productManager.html${postCartIDToParam(userLogedIn.cartID)}`;
+    window.location.href = `../../../userPage/shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
 }
 
 function filterUsername(usernameInput) {
