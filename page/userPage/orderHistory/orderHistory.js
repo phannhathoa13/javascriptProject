@@ -48,10 +48,26 @@ window.findProductName = function findProductName(event) {
   }
   else if (!productSimilar) {
     dateOrderDOM.innerHTML = "";
+<<<<<<< Updated upstream
+=======
+    displayTest(orderByDate);
+>>>>>>> Stashed changes
   }
   else {
     dateOrderDOM.innerHTML = "";
+<<<<<<< Updated upstream
     displayOrderContainerProducts(productSimilar);
+=======
+    displayTest(orderByDate);
+  }
+  else if (productSimilar && !startDateValue && !endDateValue) {
+    dateOrderDOM.innerHTML = "";
+    displayTest(productSimilar);
+  }
+  else if (orderExistInDate) {
+    dateOrderDOM.innerHTML = "";
+    displayTest(orderExistInDate);
+>>>>>>> Stashed changes
   }
 
 }
@@ -171,6 +187,91 @@ function displayOrderContainerProducts(orderHistory) {
   }
 }
 
+<<<<<<< Updated upstream
+=======
+function displayProductInforDOM(orderHistory) {
+  orderHistory.forEach((order) => {
+    var totalPrice = 0;
+    const productInforDOM = document.createElement("div");
+    productInforDOM.style.margin = "20px";
+    productInforDOM.style.display = "Flex";
+
+    const viewDetails = document.createElement("div");
+    viewDetails.textContent = "view details";
+    viewDetails.style.marginLeft = "10px";
+    viewDetails.style.cursor = "pointer";
+
+    order.cartList.forEach((products) => {
+      totalPrice += products.amount * products.price;
+      productInforDOM.textContent = `OrderID: ${order.orderID}, created At ${order.createdAt}, total price: ${totalPrice}$`;
+      productInforDOM.appendChild(viewDetails);
+      dateOrderDOM.appendChild(productInforDOM);
+
+      viewDetails.onclick = () => {
+        window.location.href = `../orderDetails/orderDetails.html${postCartIdAndOrderIDToParam(userLogedIn.cartID, order.orderID)}`;
+      }
+    })
+
+  })
+}
+
+function displayTest(orderHistory) {
+  try {
+    showLoading("loadingScreen");
+    const updateToLatestTime = orderHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const filterDateSimilar = [...new Set(updateToLatestTime.map((order) => order.createdAt))];
+
+    filterDateSimilar.forEach((dates) => {
+      const orderHistoryDate = getOderSameDate(updateToLatestTime, dates);
+
+      const dateDOM = document.createElement("div");
+      dateDOM.style.display = "flex";
+      dateDOM.style.margin = "10px";
+
+      const dateOrder = document.createElement("div");
+      dateOrder.textContent = dates;
+      dateOrder.style.margin = "5px";
+
+      dateOrderDOM.appendChild(dateDOM);
+      dateDOM.appendChild(dateOrder);
+
+      const orderDivFather = document.createElement("div");
+      orderDivFather.style.marginLeft = "30px";
+
+      orderHistoryDate.forEach((order) => {
+        var totalPrice = 0;
+        const orderContainerProduct = document.createElement("div");
+        orderContainerProduct.style.margin = "20px";
+        orderContainerProduct.style.display = "Flex";
+
+        const viewDetails = document.createElement("div");
+        viewDetails.textContent = "view details";
+        viewDetails.style.marginLeft = "10px";
+        viewDetails.style.cursor = "pointer";
+
+        order.cartList.forEach((products) => {
+          totalPrice += products.amount * products.price;
+          orderContainerProduct.textContent = `OrderID: ${order.orderID}, created At ${order.createdAt}, total price: ${totalPrice}$`;
+          orderDivFather.appendChild(orderContainerProduct);
+          orderContainerProduct.appendChild(viewDetails);
+          dateOrderDOM.appendChild(orderDivFather);
+
+          viewDetails.onclick = () => {
+            window.location.href = `../orderDetails/orderDetails.html${postCartIdAndOrderIDToParam(userLogedIn.cartID, order.orderID)}`;
+          }
+        })
+
+      })
+    })
+  } catch (error) {
+    console.log("Display list product get error", error);
+  }
+  finally {
+    hideLoading("loadingScreen");
+  }
+}
+
+>>>>>>> Stashed changes
 function displayInforProduct(productsDOM) {
   if (productsDOM.style.display == "none") {
     productsDOM.style.display = "block";
