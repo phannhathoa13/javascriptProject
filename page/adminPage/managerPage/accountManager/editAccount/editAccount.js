@@ -1,4 +1,5 @@
 import { editAccount$, fetchUserAPI } from "../../../../../controllers/userController.js";
+import { checkRoleUserLogedIn } from "../../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../../feautureReuse/loadingScreen.js";
 import User from "../../../../../models/user.js";
 import { getUserIdFromParam, postUserIDToParam } from "../../../../../routes/userRoutes.js";
@@ -10,7 +11,7 @@ let userLogedIn = getUserLogedIn(userIdFromParam);
 const usernameDOM = document.getElementById('username');
 const passwordDOM = document.getElementById('password');
 const emailDOM = document.getElementById('email');
-
+checkRoleUserLogedIn(userLogedIn);
 displayUserToInput();
 
 function displayUserToInput() {
@@ -54,7 +55,7 @@ document.getElementById('editAccount').addEventListener('submit', async function
     } catch (error) {
         console.log("edit accoutn get error", error);
     }
-    
+
 })
 
 function validateInput(usernameInput, emailInput) {
@@ -90,7 +91,7 @@ function validateInput(usernameInput, emailInput) {
 }
 
 function isUsernameExisted(usernameInPut) {
-    return listUser.some((users) => users.username == usernameInPut && users.idUser != userLogedIn.idUser );
+    return listUser.some((users) => users.username == usernameInPut && users.idUser != userLogedIn.idUser);
 }
 
 function isEmailExisted(emailInPut) {

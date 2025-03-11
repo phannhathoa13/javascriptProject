@@ -1,44 +1,54 @@
-import { addProductToCartId, fetchCartFromUserLogedIn } from "../../../controllers/cartControllers.js";
+import { addProductToCartId, fetchCartFromUserLogedIn, updateCart$ } from "../../../controllers/cartControllers.js";
 import { fetchListOrder } from "../../../controllers/orderControllers.js";
 import { deleteProduct$, fetchProductAPI } from "../../../controllers/productControllers.js";
+import { editAccount$, fetchUserAPI } from "../../../controllers/userController.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import Cart from "../../../models/cartModels.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
 const listProducts = await fetchProductAPI();
 const listOrder = await fetchListOrder();
+const listUser = await fetchUserAPI();
 
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
+let totalPriceByUser = 0;
+checkRoleUserLogedInPage();
+saveUserInforToSeasion();
+updateRankingUser();
 displayListProduct();
-checkRoleUserLogedIn();
-filterMostPurchasedProducts();
-function findTopSellingProducts() {
-    const listProductsInOrder = [];
 
-    listOrder.forEach((orders) => {
-        orders.cartList.forEach((products) => {
-            listProductsInOrder.push({
-                productName: products.productName,
-                amount: products.amount,
-                price: products.price,
-                imageProduct: products.imageProduct
-            })
+async function updateRankingUser() {
+    try {
+        showLoading('loadingScreen');
+        const orderHistoryByUser = getOrderHistoryByUserLogedIn();
+        const user = getUser();
+        orderHistoryByUser.forEach((products) => {
+            totalPriceByUser += products.totalPrice;
+            if (totalPriceByUser < 1500) {
+                user.ranking = "Member";
+            }
+            if (totalPriceByUser >= 1500) {
+                user.ranking = "VIP";
+            }
+            if (totalPriceByUser >= 3000) {
+                user.ranking = "VVIP ";
+            }
         })
-    })
+        const updateUser = editAccount$(user.idUser, user);
+        const updateCart = updateCart$(user.idUser, user, userLogedIn);
 
-    const updatedListOrder = [];
+        await Promise.all([updateUser, updateCart]);
+    } catch (error) {
+        console.log("Update ranking user get error", error);
+    }
+    finally {
+        hideLoading('loadingScreen');
+    }
 
-    listProductsInOrder.forEach((products) => {
-        const productsExisted = updatedListOrder.find((products_) => products_.productName == products.productName);
-        if (productsExisted) {
-            productsExisted.amount += products.amount;
-        }
-        else {
-            updatedListOrder.push(products);
-        }
-    })
-    const sortedProducts = updatedListOrder.sort((a, b) => b.amount - a.amount);
-    return sortedProducts.splice(0, 3);
+}
+
+function saveUserInforToSeasion() {
+    return sessionStorage.setItem('role', userLogedIn.user.role);
 }
 
 function filterMostPurchasedProducts() {
@@ -52,6 +62,49 @@ function filterMostPurchasedProducts() {
     })
 }
 
+function findTopSellingProducts() {
+    const listProductPurchased = [];
+
+    listOrder.forEach((orders) => {
+        orders.cartList.forEach((products) => {
+            listProductPurchased.push({
+                productName: products.productName,
+                amount: products.amount,
+                price: products.price,
+                imageProduct: products.imageProduct,
+                userPurchased: orders.user.username,
+                userPurchasedCount: 1
+            })
+        })
+    })
+
+    const mostPurchasedProducts = [];
+
+    listProductPurchased.forEach((products) => {
+        const productPurchased = mostPurchasedProducts.find((products_) => products_.productName == products.productName);
+        if (productPurchased) {
+            productPurchased.amount += products.amount;
+            if (!productPurchased.userPurchased.includes(products.userPurchased)) {
+                productPurchased.userPurchasedCount += 1;
+                productPurchased.userPurchased.push(products.userPurchased);
+            }
+        }
+        else {
+            mostPurchasedProducts.push({
+                productName: products.productName,
+                amount: products.amount,
+                price: products.price,
+                imageProduct: products.imageProduct,
+                userPurchased: [products.userPurchased],
+                userPurchasedCount: 1
+            })
+        }
+    })
+
+    const sortedProducts = mostPurchasedProducts.sort((a, b) => b.userPurchasedCount - a.userPurchasedCount);
+    return sortedProducts.splice(0, 3);
+}
+
 
 async function displayListProduct() {
     try {
@@ -59,14 +112,17 @@ async function displayListProduct() {
         const topSellingProducts = findTopSellingProducts();
         const nonTopSellingProducts = filterMostPurchasedProducts();
 
+        console.log(topSellingProducts);
         topSellingProducts.forEach((products) => {
+            const productExistInListProduct = getProducts(products.productName);
+
             const bestSellerString = document.createElement("span");
             bestSellerString.textContent = "(Best Seller)";
             bestSellerString.style.color = "#FFA500";
             bestSellerString.style.margin = "0 5px";
 
             const amountAndPriceInfor = document.createElement("span");
-            amountAndPriceInfor.textContent = `Amount: ${products.amount}, Price: ${products.price}$`;
+            amountAndPriceInfor.textContent = `Amount: ${productExistInListProduct.amount}, Price: ${productExistInListProduct.price}$`;
 
             const productInforDOM = document.createElement("div");
             productInforDOM.textContent = `Product: ${products.productName}`;
@@ -75,14 +131,14 @@ async function displayListProduct() {
             productInforDOM.appendChild(bestSellerString);
             productInforDOM.appendChild(amountAndPriceInfor);
 
-            displayProductsDOM(products, productInforDOM);
+            displayProductsDOM(products, productExistInListProduct, productInforDOM);
         })
 
         nonTopSellingProducts.forEach((products) => {
             const productInforDOM = document.createElement("div");
             productInforDOM.textContent = `Product: ${products.productName}, Amount: ${products.amount}, Price: ${products.price}$`;
             productInforDOM.style.placeContent = "center";
-            displayProductsDOM(products, productInforDOM);
+            displayProductsDOM(products, products, productInforDOM);
         });
 
     } catch (error) {
@@ -93,7 +149,7 @@ async function displayListProduct() {
     }
 }
 
-function displayProductsDOM(products, productInforDOM) {
+function displayProductsDOM(products, amountProducts, productInforDOM) {
     const listProductDOM = document.getElementById('listProduct');
 
     const buttonContainer = document.getElementById('buttonContainer');
@@ -112,7 +168,7 @@ function displayProductsDOM(products, productInforDOM) {
     buttonAddToCart.textContent = "ADD";
     buttonAddToCart.style.margin = "10px";
     buttonAddToCart.onclick = () => {
-        addToCart(products.productName, parseFloat(products.price), products.amount, products.imageProduct);
+        addToCart(products.productName, parseFloat(products.price), amountProducts.amount, products.imageProduct);
     }
     productInforDOM.appendChild(buttonAddToCart);
     if (products.amount == 0) {
@@ -126,7 +182,7 @@ function displayProductsDOM(products, productInforDOM) {
     }
 }
 
-function checkRoleUserLogedIn() {
+function checkRoleUserLogedInPage() {
     const roleUserLogedIn = userLogedIn.user.role;
 
     const accountsManagerButtonDOM = document.getElementById('accountsManager');
@@ -179,6 +235,7 @@ async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM, imag
             const product = productExistedInCart(nameProductDOM);
             if (product) {
                 if (product.amount >= amountProductDOM) {
+                    hideLoading('loadingScreen');
                     window.alert("You reach to limited amount of product");
                     return;
                 }
@@ -195,7 +252,6 @@ async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM, imag
                     imageProduct: imageProductDOM
                 });
             };
-            console.log(userLogedIn, "Cart VAlue");
             const updatedCart = await addProductToCartId(getUserIDInParam, userLogedIn);
             if (updatedCart) {
                 userLogedIn = updatedCart;
@@ -230,6 +286,13 @@ function productExistedInCart(nameProductDOM) {
     return userLogedIn.products.find((product_) => product_.productName == nameProductDOM);
 }
 
+function getProducts(productNameInTopSelling) {
+    return listProducts.find((products) => products.productName == productNameInTopSelling)
+}
+
+function getOrderHistoryByUserLogedIn() {
+    return listOrder.filter((users) => users.user.username == userLogedIn.user.username);
+}
 window.orderHistory = function orderHistory() {
     window.location.href = `../orderHistory/orderHistory.html${postCartIDToParam(userLogedIn.cartID)}`
 }
@@ -243,4 +306,8 @@ window.logOut = function logOut() {
 
 window.roleAccessManager = function roleAccessManager() {
     window.location.href = `../../adminPage/managerPage/roleAccessPage/roleAccessPage.html${postCartIDToParam(userLogedIn.cartID)}`
+}
+
+function getUser() {
+    return listUser.find((users) => users.username == userLogedIn.user.username);
 }

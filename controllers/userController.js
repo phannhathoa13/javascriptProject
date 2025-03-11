@@ -19,7 +19,8 @@ async function registerAccountUser(user) {
                 password: user.password,
                 email: user.email,
                 createdAt: user.createdAt,
-                role: user.role
+                role: user.role,
+                ranking: user.ranking
             })
         });
         return await reponse.json();
@@ -41,7 +42,8 @@ async function editAccount$(userID, user) {
                 password: user.password,
                 email: user.email,
                 createdAt: user.createdAt,
-                role: user.role
+                role: user.role,
+                ranking: user.ranking
             })
         });
         return await reponse.json();

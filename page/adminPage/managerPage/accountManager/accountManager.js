@@ -1,5 +1,6 @@
 import { fetchCartFromApi, fetchCartFromUserLogedIn, removeCart$, updateCart$ } from "../../../../controllers/cartControllers.js";
 import { editAccount$, fetchUserAPI, removeAccount$ } from "../../../../controllers/userController.js";
+import { checkRoleUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
 import { postUserIDToParam } from "../../../../routes/userRoutes.js";
@@ -9,6 +10,7 @@ const listAccountDOM = document.getElementById('listAccount');
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
 
+checkRoleUserLogedIn(userLogedIn);
 displayListUser();
 function displayListUser() {
     const listAccount$ = filterUserLogedIn();

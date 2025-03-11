@@ -28,7 +28,7 @@ function displayOrderHistory() {
         userLogedIn.cartID
       )}`;
     } else {
-      displayOrderContainerProducts(orderHistory);
+      displayOrderContainerProducts(orderHistory, "none");
     }
   } catch (error) {
     console.log("Display order history get error", error);
@@ -53,23 +53,23 @@ window.findProductName = function findProductName(event) {
 
   if (productNameInput == "" && !startDateValue && !endDateValue) {
     dateOrderDOM.innerHTML = "";
-    displayOrderContainerProducts(orderHistory);
+    displayOrderContainerProducts(orderHistory, "none");
   }
   else if (productNameInput == "" && startDateValue && endDateValue) {
     dateOrderDOM.innerHTML = "";
-    displayProductInforDOM(orderByDate);
+    displayOrderContainerProducts(orderByDate, "inline-block");
   }
   else if (!productSimilar && startDateValue && endDateValue) {
     dateOrderDOM.innerHTML = "";
-    displayProductInforDOM(orderByDate);
+    displayOrderContainerProducts(orderByDate, "inline-block");
   }
   else if (productSimilar && !startDateValue && !endDateValue) {
     dateOrderDOM.innerHTML = "";
-    displayProductInforDOM(productSimilar);
+    displayOrderContainerProducts(productSimilar, "inline-block");
   }
   else if (orderExistInDate) {
     dateOrderDOM.innerHTML = "";
-    displayProductInforDOM(orderExistInDate);
+    displayOrderContainerProducts(orderExistInDate, "inline-block");
   }
 }
 
@@ -103,7 +103,7 @@ window.findDate = function findDate() {
       }
       else if (orderExistInDate) {
         dateOrderDOM.innerHTML = "";
-        displayProductInforDOM(orderExistInDate);
+        displayOrderContainerProducts(orderExistInDate, "inline-block");
       }
     }
     else {
@@ -113,15 +113,17 @@ window.findDate = function findDate() {
       }
       else {
         dateOrderDOM.innerHTML = "";
-        displayProductInforDOM(orderByDate)
+        displayOrderContainerProducts(orderByDate, "inline-block")
       }
     }
   }
   else {
     if (!productNameInput) {
-      displayOrderContainerProducts(orderHistory);
+      dateOrderDOM.innerHTML = "";
+      displayOrderContainerProducts(orderHistory, "none");
     }
   }
+
 }
 
 function getThatProductExistInDate(startDate, endDate, productSimilar) {
@@ -149,7 +151,7 @@ function formatTime(time) {
   return new Date(time).getTime();
 }
 
-function displayOrderContainerProducts(orderHistory) {
+function displayOrderContainerProducts(orderHistory, orderDivDOMStyleDisplay) {
   try {
     showLoading("loadingScreen");
     const updateToLatestTime = orderHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -175,7 +177,7 @@ function displayOrderContainerProducts(orderHistory) {
 
       const orderDivFather = document.createElement("div");
       orderDivFather.style.marginLeft = "30px";
-      orderDivFather.style.display = "none";
+      orderDivFather.style.display = orderDivDOMStyleDisplay;
 
       orderHistoryDate.forEach((order) => {
         var totalPrice = 0;
@@ -212,32 +214,6 @@ function displayOrderContainerProducts(orderHistory) {
   finally {
     hideLoading("loadingScreen");
   }
-}
-
-function displayProductInforDOM(orderHistory) {
-  orderHistory.forEach((order) => {
-    var totalPrice = 0;
-    const productInforDOM = document.createElement("div");
-    productInforDOM.style.margin = "20px";
-    productInforDOM.style.display = "Flex";
-
-    const viewDetails = document.createElement("div");
-    viewDetails.textContent = "view details";
-    viewDetails.style.marginLeft = "10px";
-    viewDetails.style.cursor = "pointer";
-
-    order.cartList.forEach((products) => {
-      totalPrice += products.amount * products.price;
-      productInforDOM.textContent = `OrderID: ${order.orderID}, created At ${order.createdAt}, total price: ${totalPrice}$`;
-      productInforDOM.appendChild(viewDetails);
-      dateOrderDOM.appendChild(productInforDOM);
-
-      viewDetails.onclick = () => {
-        window.location.href = `../orderDetails/orderDetails.html${postCartIdAndOrderIDToParam(userLogedIn.cartID, order.orderID)}`;
-      }
-    })
-
-  })
 }
 
 function displayInforProduct(productsDOM) {

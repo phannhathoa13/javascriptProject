@@ -1,6 +1,7 @@
 
 import { fetchCartFromUserLogedIn } from "../../../../controllers/cartControllers.js";
 import { fetchProductAPI, updateProduct } from "../../../../controllers/productControllers.js";
+import { checkRoleUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import Product from "../../../../models/product.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
@@ -21,7 +22,7 @@ imageProductDOM.style.margin = "5px";
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
 let previusImage = "";
-
+checkRoleUserLogedIn(userLogedIn);
 displayProductToInput();
 function displayProductToInput() {
     try {
@@ -142,7 +143,7 @@ function createProductObject(base64String) {
     const formData = new FormData(document.getElementById('editValue'));
     const product = new Product(
         formData.get('productName'),
-        formData.get('amount'),
+        parseInt(formData.get('amount')),
         formData.get('price'),
         base64String
     )
