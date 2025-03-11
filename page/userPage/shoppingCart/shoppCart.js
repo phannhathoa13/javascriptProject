@@ -116,7 +116,6 @@ async function addToCart(nameProductDOM, priceProductDOM, amountProductDOM, imag
                     imageProduct: imageProductDOM
                 });
             };
-            console.log(userLogedIn, "Cart VAlue");
             const updatedCart = await addProductToCartId(getUserIDInParam, userLogedIn);
             if (updatedCart) {
                 userLogedIn = updatedCart;
