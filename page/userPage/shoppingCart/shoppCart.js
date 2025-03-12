@@ -2,6 +2,7 @@ import { addProductToCartId, fetchCartFromUserLogedIn, updateCart$ } from "../..
 import { fetchListOrder } from "../../../controllers/orderControllers.js";
 import { deleteProduct$, fetchProductAPI } from "../../../controllers/productControllers.js";
 import { editAccount$, fetchUserAPI } from "../../../controllers/userController.js";
+import { checkRoleUserLogedIn, removeInforUserLogedIn } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import Cart from "../../../models/cartModels.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
@@ -12,10 +13,15 @@ const listUser = await fetchUserAPI();
 const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
 let totalPriceByUser = 0;
-checkRoleUserLogedInPage();
-saveUserInforToSeasion();
-updateRankingUser();
-displayListProduct();
+
+displayAllInformation();
+
+async function displayAllInformation() {
+    checkRoleUserLogedIn(userLogedIn);
+    await updateRankingUser();
+    await displayListProduct();
+    checkRoleToDisplayButton();
+}
 
 async function updateRankingUser() {
     try {
@@ -31,25 +37,26 @@ async function updateRankingUser() {
                 user.ranking = "VIP";
             }
             if (totalPriceByUser >= 3000) {
-                user.ranking = "VVIP ";
+                user.ranking = "VVIP";
             }
         })
-        const updateUser = editAccount$(user.idUser, user);
-        const updateCart = updateCart$(user.idUser, user, userLogedIn);
+        await editAccount$(user.idUser, user);
+        const updateCart = await updateCart$(userLogedIn.cartID, user, userLogedIn);
 
-        await Promise.all([updateUser, updateCart]);
+        if (updateCart) {
+            userLogedIn = updateCart;
+        }
+
+
     } catch (error) {
         console.log("Update ranking user get error", error);
     }
     finally {
         hideLoading('loadingScreen');
     }
-
 }
 
-function saveUserInforToSeasion() {
-    return sessionStorage.setItem('role', userLogedIn.user.role);
-}
+
 
 function filterMostPurchasedProducts() {
     const topSellingProducts = findTopSellingProducts();
@@ -182,7 +189,7 @@ function displayProductsDOM(products, amountProducts, productInforDOM) {
     }
 }
 
-function checkRoleUserLogedInPage() {
+function checkRoleToDisplayButton() {
     const roleUserLogedIn = userLogedIn.user.role;
 
     const accountsManagerButtonDOM = document.getElementById('accountsManager');
@@ -194,21 +201,27 @@ function checkRoleUserLogedInPage() {
 
     const roleAccessManagerDOM = document.getElementById('roleAccessManager');
 
+    const voucherManagerDOM = document.getElementById('voucherManager');
+    voucherManagerDOM.style.display = "none";
+
     if (roleUserLogedIn == "OWNER") {
         accountsManagerButtonDOM.style.display = "inline-block";
         productsManagerButtonDOM.style.display = "inline-block";
         roleAccessManagerDOM.style.display = "inline-block";
+        voucherManagerDOM.style.display = "inline-block";
 
         return;
     } if (roleUserLogedIn == "USERADMIN") {
         productsManagerButtonDOM.style.display = "inline-block";
         roleAccessManagerDOM.style.display = "inline-block";
+        voucherManagerDOM.style.display = "none";
 
     }
     else {
         accountsManagerButtonDOM.style.display = "none";
         productsManagerButtonDOM.style.display = "none";
         roleAccessManagerDOM.style.display = "none";
+        voucherManagerDOM.style.display = "none";
 
 
         return;
@@ -224,6 +237,9 @@ window.productsManager = function productsManager() {
 }
 window.accountsManager = function accountsManager() {
     window.location.href = `../../adminPage/managerPage/accountManager/accountManager.html${postCartIDToParam(userLogedIn.cartID)}`;
+}
+window.voucherManager = function voucherManager() {
+    window.location.href = `../../adminPage/managerPage/voucherManager/voucherManager.html${postCartIDToParam(userLogedIn.cartID)}`;
 }
 
 
@@ -293,6 +309,9 @@ function getProducts(productNameInTopSelling) {
 function getOrderHistoryByUserLogedIn() {
     return listOrder.filter((users) => users.user.username == userLogedIn.user.username);
 }
+
+
+
 window.orderHistory = function orderHistory() {
     window.location.href = `../orderHistory/orderHistory.html${postCartIDToParam(userLogedIn.cartID)}`
 }
@@ -301,6 +320,7 @@ window.viewCart = function viewCart() {
     window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`
 }
 window.logOut = function logOut() {
+    removeInforUserLogedIn()
     window.location.href = "../loginPage/loginPage.html";
 }
 

@@ -4,7 +4,7 @@ import {
     fetchProductAPI,
     createProduct,
 } from "../../../../controllers/productControllers.js";
-import { checkRoleUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { checkRoleUserLogedIn, removeInforUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import Product from "../../../../models/product.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
@@ -239,6 +239,7 @@ function getProductExisted(productNameDOM) {
     return listProduct.find((products) => products.productName == productNameDOM);
 }
 window.logOut = function logOut() {
+    removeInforUserLogedIn();
     window.location.href = "../../../userPage/loginPage/loginPage.html";
 };
 

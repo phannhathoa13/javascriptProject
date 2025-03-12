@@ -1,5 +1,6 @@
 import { fetchCartFromUserLogedIn, updateCartInAccount } from "../../../controllers/cartControllers.js";
 import { fetchListOrder } from "../../../controllers/orderControllers.js";
+import { checkRoleUserLogedIn } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
 
@@ -11,7 +12,7 @@ const listOrderHistoryDOM = document.getElementById('listOrderHistory');
 const totalPriceDOM = document.getElementById('totalPrice');
 const orderIdDOM = document.getElementById('orderId');
 const paidTimeDOM = document.getElementById('paidTime');
-
+checkRoleUserLogedIn(userLogedIn);
 
 displayProductsOrder();
 function displayProductsOrder() {

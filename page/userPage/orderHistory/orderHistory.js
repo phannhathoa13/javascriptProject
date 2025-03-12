@@ -1,5 +1,6 @@
 import { fetchCartFromUserLogedIn } from "../../../controllers/cartControllers.js";
 import { fetchListOrder } from "../../../controllers/orderControllers.js";
+import { checkRoleUserLogedIn } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import {
   hideLoading,
   showLoading,
@@ -15,6 +16,8 @@ const userLogedIn = await fetchCartFromUserLogedIn(getuserId);
 const orderList = await fetchListOrder();
 const dateOrderDOM = document.getElementById("dateOrder");
 
+checkRoleUserLogedIn(userLogedIn);
+
 
 displayOrderHistory();
 
@@ -29,6 +32,7 @@ function displayOrderHistory() {
       )}`;
     } else {
       displayOrderContainerProducts(orderHistory, "none");
+      console.log(orderHistory);
     }
   } catch (error) {
     console.log("Display order history get error", error);
@@ -180,7 +184,6 @@ function displayOrderContainerProducts(orderHistory, orderDivDOMStyleDisplay) {
       orderDivFather.style.display = orderDivDOMStyleDisplay;
 
       orderHistoryDate.forEach((order) => {
-        var totalPrice = 0;
         const orderContainerProduct = document.createElement("div");
         orderContainerProduct.style.margin = "20px";
         orderContainerProduct.style.display = "Flex";
@@ -190,21 +193,18 @@ function displayOrderContainerProducts(orderHistory, orderDivDOMStyleDisplay) {
         viewDetails.style.marginLeft = "10px";
         viewDetails.style.cursor = "pointer";
 
-        order.cartList.forEach((products) => {
-          totalPrice += products.amount * products.price;
-          orderContainerProduct.textContent = `OrderID: ${order.orderID}, created At ${order.createdAt}, total price: ${totalPrice}$`;
-          orderDivFather.appendChild(orderContainerProduct);
-          orderContainerProduct.appendChild(viewDetails);
-          dateOrderDOM.appendChild(orderDivFather);
+        orderContainerProduct.textContent = `OrderID: ${order.orderID}, created At ${order.createdAt}, total price: ${order.totalPrice}$`;
+        orderDivFather.appendChild(orderContainerProduct);
+        orderContainerProduct.appendChild(viewDetails);
+        dateOrderDOM.appendChild(orderDivFather);
 
-          buttonExtend.onclick = () => {
-            displayInforProduct(orderDivFather);
-          }
+        buttonExtend.onclick = () => {
+          displayInforProduct(orderDivFather);
+        }
 
-          viewDetails.onclick = () => {
-            window.location.href = `../orderDetails/orderDetails.html${postCartIdAndOrderIDToParam(userLogedIn.cartID, order.orderID)}`;
-          }
-        })
+        viewDetails.onclick = () => {
+          window.location.href = `../orderDetails/orderDetails.html${postCartIdAndOrderIDToParam(userLogedIn.cartID, order.orderID)}`;
+        }
 
       })
     })

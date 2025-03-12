@@ -1,6 +1,7 @@
 import { fetchCartFromUserLogedIn, updateCart$ } from "../../../controllers/cartControllers.js";
 import { fetchListRequestRole$, requestRole$ } from "../../../controllers/rolesControllers.js";
 import { editAccount$, fetchUserAPI } from "../../../controllers/userController.js";
+import { checkRoleUserLogedIn } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import User from "../../../models/user.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
@@ -30,17 +31,21 @@ let isEmailValid = false;
 
 const userAccountInfor = userLogedIn.user;
 const userLogedInInformation = getUserID(userAccountInfor.username);
-
+checkRoleUserLogedIn(userLogedIn);
 displayAccount();
 checkRequestRole();
 
 function displayAccount() {
     showLoading('loadingScreenDOM');
-    // const personDenied = getPersonDeniedRequest();
-    // if (!isUserRequestedRole(userLogedInInformation.idUser)) {
-    //     window.alert(`Your request role have been denined by user: ${personDenied}`);
-    // }
+    const personDenied = getPersonDeniedRequest('personDeny');
+    const idUserDenied = getPersonDeniedRequest('idUserDenied');
 
+    if (userLogedInInformation.idUser == idUserDenied) {
+        window.alert(`Your request role have been denined by user: ${personDenied}`);
+        hideLoading('loadingScreenDOM');
+        sessionStorage.removeItem('personDeny');
+        sessionStorage.removeItem('idUserDenied');
+    }
     const usernameDOM = document.getElementById('username');
 
     const accountInforContainerDOM = document.getElementById('accountInforContainer');
@@ -48,6 +53,7 @@ function displayAccount() {
     accountInforContainerDOM.style.marginTop = "10px";
 
     const roleDOM = document.getElementById('role');
+    roleDOM.style.color = "rgb(218 28 28)";
     roleDOM.innerHTML = userAccountInfor.role;
 
     usernameDOM.innerHTML = userAccountInfor.username;
@@ -73,7 +79,7 @@ function displayAccount() {
 }
 
 window.requestRole = async function requestRole() {
-    // showLoading('loadingScreenDOM');
+    showLoading('loadingScreenDOM');
     const roleCustomer = getRole("CUSTOMER");
     const roleAdmin = getRole("USERADMIN");
     const roleOwner = getRole("OWNER");
@@ -106,12 +112,6 @@ function getRole(roleName) {
 }
 
 function checkRequestRole() {
-    // const personDenied = getPersonDeniedRequest();
-    // if (!isUserRequestedRole(userLogedInInformation.idUser)) {
-    //     window.alert(`Your request role have been denined by user: ${personDenied}`);
-    //     localStorage.removeItem('personDeny');
-    //     return;
-    // }
     if (isRequestApproved()) {
         requestRoleButtonDOM.textContent = `Approved Role: ${userLogedInInformation.role}`;
         requestRoleButtonDOM.style.background = "#8dff8d";
@@ -326,8 +326,8 @@ function isRequestApproved() {
     return listRoleReuquested.some((request) => request.idUser == userLogedInInformation.idUser && request.roleRequest == userLogedInInformation.role);
 }
 
-function getPersonDeniedRequest() {
-    return localStorage.getItem('personDeny');
+function getPersonDeniedRequest(key) {
+    return sessionStorage.getItem(key);
 }
 
 function errorMassage(valueInput, textWarning) {

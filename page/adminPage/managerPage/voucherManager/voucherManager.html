@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../../../feautureReuse/loadingScreen.css">
+    <title>Voucher Manager</title>
+</head>
+
+<body>
+
+    <h2>Voucher Manager </h2>
+    <div id="loadingScreenDOM" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    <button onclick="back()">Back</button>
+    <div id="inputContainer">
+        <input type="text" id="voucherName" placeholder="Voucher Name" oninput="validateOnInputVoucherName(event)">
+        <input type="number" id="amount" placeholder="Voucher Amount">
+        <input type="number" id="discount" placeholder="Discount %">
+        <input type="checkbox" id="limitTime">Limit Time
+        <input type="number" id="howLongTimeLimit" placeholder="How Many Hours ?">
+    </div>
+    <div id="voucherNameWarning"></div>
+    <button id="createVoucher" onclick="createVoucher()">Create Voucher</button>
+    <div id="listVoucher"></div>
+
+
+
+
+
+    <script type="module" src="../voucherManager/voucherManager.js"></script>
+</body>
+
+</html>

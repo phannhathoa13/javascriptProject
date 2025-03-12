@@ -110,7 +110,8 @@ async function denyRequest(requestByUser) {
   try {
     showLoading("loadingScreenDOM");
     await removeRequest$(requestByUser.id);
-    localStorage.setItem("personDeny", userInformation.username);
+    sessionStorage.setItem("personDeny", userInformation.username);
+    sessionStorage.setItem("idUserDenied", requestByUser.idUser);
     hideLoading("loadingScreenDOM");
 
     setTimeout(() => {

@@ -1,6 +1,7 @@
 
 import { fetchCartFromApi, updateCartInAccount } from "../../../controllers/cartControllers.js";
 import { fetchProductAPI } from "../../../controllers/productControllers.js";
+import { checkRoleUserLogedIn } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
 
@@ -12,7 +13,7 @@ let userLogedIn = isUserLogedIn();
 const listProduct = await fetchProductAPI();
 
 let isAmountAvaiable = false;
-
+checkRoleUserLogedIn(userLogedIn);
 displayValueOfProduct();
 
 function displayValueOfProduct() {

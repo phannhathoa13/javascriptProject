@@ -212,6 +212,7 @@ async function registerAccountWithRole(formData, role) {
     await registerCartUser(cart);
 }
 
+
 function getCodeRole(codeRoleInput) {
     return listRole.find((code) => code.codeName == codeRoleInput);
 }

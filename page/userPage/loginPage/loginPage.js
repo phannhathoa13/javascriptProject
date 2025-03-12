@@ -12,7 +12,7 @@ document.getElementById('form').addEventListener('submit', function (event) {
     const usernameInput = document.getElementById('username').value;
     const passwordInput = document.getElementById('pwd').value;
 
-    const getUserFormApi = getUser(usernameInput, passwordInput);
+    const userAcccount = getUser(usernameInput, passwordInput);
 
     if (!usernameInput || !passwordInput) {
         hideLoading('loadingScreen');
@@ -31,21 +31,13 @@ document.getElementById('form').addEventListener('submit', function (event) {
             return;
         }, 100);
     }
-    else if (isAccountHaveRoleUserAdmin(usernameInput, passwordInput) || isAccountHaveRoleOwner(usernameInput, passwordInput)) {
-        hideLoading('loadingScreen');
-
-        setTimeout(() => {
-            window.alert("Login successed");
-            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(parseInt(getUserFormApi.idUser))}`;
-            return;
-        }, 100);
-    }
     else {
+        saveUserInforToSeasion(userAcccount);
         hideLoading('loadingScreen');
 
         setTimeout(() => {
             window.alert("Login successed");
-            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(parseInt(getUserFormApi.idUser))}`;
+            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(parseInt(userAcccount.idUser))}`;
             return;
         }, 100);
     }
@@ -56,12 +48,12 @@ window.negativeToRegiser = function negativeToRegiser() {
 function getUser(usernameInput, passwordInput) {
     return listUser.find((user) => user.username == usernameInput && user.password == passwordInput);
 }
+function saveUserInforToSeasion(userAcccount) {
+    return sessionStorage.setItem('role', userAcccount.role), sessionStorage.setItem('idUserLogedIn', userAcccount.idUser);
+}
 
 function isAccountExisted(usernameInput, passwordInput) {
     return listUser.some((user) => user.username == usernameInput && user.password == passwordInput);
-}
-function isAccountHaveRoleUserAdmin(usernameInput, passwordInput) {
-    return listUser.some((user) => user.username == usernameInput && user.password == passwordInput && user.role == "USERADMIN");
 }
 
 function isAccountHaveRoleOwner(usernameInput, passwordInput) {
