@@ -177,7 +177,7 @@ document.getElementById('form').addEventListener('submit', async function (event
 async function validateCountAmount(formData) {
     count--;
     localStorage.setItem("count", count);
-    if (count >= 0){
+    if (count >= 0) {
         if (count != 0) {
             hideLoading('loadingScreen');
             window.alert(`Your code name is wrong, you can try only ${count} time agian `);
@@ -201,7 +201,8 @@ async function registerAccountWithRole(formData, role) {
         formData.get('pwd'),
         formData.get('email'),
         createdAt,
-        role
+        role,
+        "Member"
     )
     const cart = new Cart(
         user,

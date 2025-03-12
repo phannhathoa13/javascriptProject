@@ -4,6 +4,7 @@ import {
     fetchProductAPI,
     createProduct,
 } from "../../../../controllers/productControllers.js";
+import { checkRoleUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import Product from "../../../../models/product.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
@@ -25,7 +26,10 @@ const previewImgDOM = document.getElementById('previewImg');
 
 
 let lastImgPreviewDOM = "";
+checkRoleUserLogedIn(userLogedIn);
 displayProduct();
+
+
 function displayProduct() {
     listProduct.forEach((products) => {
         try {
@@ -183,7 +187,7 @@ function validateValueInput(product) {
         window.alert("Please enter the product name");
         return false;
     }
-    else if (!validateProductNameInput(productNameValue)){
+    else if (!validateProductNameInput(productNameValue)) {
         hideLoading("loadingScreenDOM");
         window.alert("The product name is not valid");
         return false;

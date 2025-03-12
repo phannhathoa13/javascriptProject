@@ -1,5 +1,6 @@
 import { fetchCartFromUserLogedIn } from "../../../../controllers/cartControllers.js";
 import { createRole$, fetchListRole } from "../../../../controllers/rolesControllers.js";
+import { checkRoleUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import { RoleOwner, RoleUserAdmin } from "../../../../models/rolesModels.js";
 import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
@@ -9,6 +10,7 @@ const getUserIDInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
 const codeNameDOM = document.getElementById('codeName');
 const rolesSelectedDOM = document.getElementById('roles');
+checkRoleUserLogedIn(userLogedIn);
 hideLoading("loadingScreen");
 
 window.createCodeRoles = async function createCodeRoles() {
@@ -56,7 +58,7 @@ function validateCodeName(codeNameInput) {
     }
     else if (isCodeNameExisted(codeNameInput)) {
         hideLoading("loadingScreen");
-        window.alert( "This code is existed");
+        window.alert("This code is existed");
         return false;
     }
     else if (!validateCodeInput(codeNameInput)) {
@@ -69,7 +71,7 @@ function validateCodeName(codeNameInput) {
     }
 }
 
-window.validateCodeNameDOM = function validateCodeNameDOM (event) {
+window.validateCodeNameDOM = function validateCodeNameDOM(event) {
     const codeNameInput = event.target.value;
     const inputWarningFather = document.getElementById('inputWarning')
     inputWarningFather.style.marginLeft = "50px";

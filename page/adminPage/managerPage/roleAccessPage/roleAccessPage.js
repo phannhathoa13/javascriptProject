@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
   fetchCartFromApi,
   fetchCartFromUserLogedIn,
@@ -19,6 +20,14 @@ import {
   getValueInQuerryParam,
   postCartIDToParam,
 } from "../../../../routes/cartRoutes.js";
+=======
+import { fetchCartFromApi, fetchCartFromUserLogedIn, updateCart$ } from "../../../../controllers/cartControllers.js";
+import { fetchListRequestRole$, removeRequest$ } from "../../../../controllers/rolesControllers.js"
+import { editRoleAccount$, fetchUserAPI } from "../../../../controllers/userController.js";
+import { checkRoleUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
+import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
+>>>>>>> backup
 
 const listUser = await fetchUserAPI();
 const listCart = await fetchCartFromApi();
@@ -27,11 +36,14 @@ const getUserIDInParam = getValueInQuerryParam("cartID");
 let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
 
 const userInformation = userLogedIn.user;
-
+checkRoleUserLogedIn(userLogedIn);
 displayListRequestRole();
 
+<<<<<<< HEAD
 function checkRoleUserLogedIn() {}
 
+=======
+>>>>>>> backup
 function displayListRequestRole() {
   const listCustomerRequest = listReuqestRoleByAdmin();
   const listAdminRequest = listRequestsByOwner();

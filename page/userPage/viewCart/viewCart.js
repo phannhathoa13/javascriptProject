@@ -1,5 +1,5 @@
 import { fetchCartFromUserLogedIn, updateCartInAccount } from "../../../controllers/cartControllers.js";
-import { createOrder } from "../../../controllers/orderControllers.js";
+import { createOrder, fetchListOrder } from "../../../controllers/orderControllers.js";
 import { fetchProductAPI, updateProduct } from "../../../controllers/productControllers.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
 import Order from "../../../models/order.js";
@@ -8,15 +8,20 @@ import { getValueInQuerryParam, postCartIdAndValueToParam, postCartIDToParam } f
 const listProduct = await fetchProductAPI();
 const getValueInParam = getValueInQuerryParam('cartID');
 let userLogedIn = await fetchCartFromUserLogedIn(getValueInParam);
+
+let totalPrice = 0;
 showListProductInCartUser();
 async function showListProductInCartUser() {
     try {
         showLoading('loadingScreen');
+        const totalPriceDOM = document.getElementById('totalPrice');
+        const rankingDiscountDOM = document.getElementById('rankingDiscount');
         const listProductDOM = document.getElementById('listProductInCart');
         if (userLogedIn.products.length == 0) {
             window.alert("Your cart is empty");
             window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
         }
+
         userLogedIn.products.forEach(product_ => {
             const productDivDOM = document.createElement("div");
             productDivDOM.style.display = "flex";
@@ -26,6 +31,8 @@ async function showListProductInCartUser() {
             productDOM.textContent = `product name: ${product_.productName}, amount: ${product_.amount}, price: $${product_.price} `
             productDOM.style.placeContent = "center";
             productDOM.style.margin = "10px";
+
+            totalPrice += product_.amount * product_.price;
 
             const imageProductDOM = document.createElement("img");
             imageProductDOM.src = product_.imageProduct;
@@ -46,12 +53,17 @@ async function showListProductInCartUser() {
                 productDivDOM.remove();
                 removeProduct(product_.productName);
             }
-            
+
             listProductDOM.appendChild(productDivDOM);
             productDivDOM.appendChild(imageProductDOM);
             productDivDOM.appendChild(productDOM);
             productDOM.appendChild(buttonEditDOM);
             productDOM.appendChild(buttonRemoveDOM);
+
+            totalPriceDOM.innerHTML = `Total Price: ${totalPrice}$`;
+            totalPriceDOM.style.margin = "10px";
+
+            rankingDiscountDOM.innerHTML = `Ranking: ${userLogedIn.user.rank} discount`
 
         });
     } catch (error) {
@@ -139,6 +151,7 @@ function createOrderAfterPayment() {
     )
     return orderHistory
 }
+
 
 window.negativeToShoppingCart = function negativeToShoppingCart() {
     window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
