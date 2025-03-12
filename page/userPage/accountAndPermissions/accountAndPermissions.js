@@ -36,14 +36,11 @@ checkRequestRole();
 
 function displayAccount() {
     showLoading('loadingScreenDOM');
-<<<<<<< HEAD
     // const personDenied = getPersonDeniedRequest();
     // if (!isUserRequestedRole(userLogedInInformation.idUser)) {
     //     window.alert(`Your request role have been denined by user: ${personDenied}`);
     // }
 
-=======
->>>>>>> backup
     const usernameDOM = document.getElementById('username');
 
     const accountInforContainerDOM = document.getElementById('accountInforContainer');
@@ -132,20 +129,6 @@ function checkRequestRole() {
             return;
         }
     }
-<<<<<<< HEAD
-    
-
-
-
-=======
-    // if (userLogedInInformation.role == getRequest.roleRequest) {
-    //     requestRoleButtonDOM.textContent = `Approved role: ${getRequest.roleRequest}`;
-    //     requestRoleButtonDOM.style.background = "green";
-    //     requestRoleButtonDOM.style.border = "1px solid #53a45a";
-    //     requestRoleButtonDOM.style.color = "#000000";
-    //     requestRoleButtonDOM.disabled = true;
-    // }
->>>>>>> backup
 }
 
 function displayInputAndInforDOM(string, inforDOMDisplay) {
