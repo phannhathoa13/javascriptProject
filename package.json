@@ -1,0 +1,25 @@
+{
+    "name": "javascriptproject",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node server.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/phannhathoa13/javascriptProject.git"
+    },
+    "keywords": [],
+    "bugs": {
+        "url": "https://github.com/phannhathoa13/javascriptProject/issues"
+    },
+    "homepage": "https://github.com/phannhathoa13/javascriptProject#readme",
+    "dependencies": {
+        "express": "^4.21.2",
+        "ws": "^8.18.1"
+    }
+}

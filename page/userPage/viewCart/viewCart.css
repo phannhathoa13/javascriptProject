@@ -7,9 +7,16 @@
   background: rgba(0, 0, 0, 0.3);
   z-index: 2;
 }
+
 .selectBoxContainer {
-  display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  width: 300px;
+  background-color: white;
+  text-align: center;
+  position: fixed;
+  left: 50%;
+  top: 6%;
+  display: flex;
+  gap: 10px;
 }
