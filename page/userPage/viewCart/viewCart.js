@@ -9,7 +9,10 @@ import {
   updateProduct,
 } from "../../../controllers/productControllers.js";
 import { fetchListVoucher } from "../../../controllers/voucherController.js";
-import { getValueSeasion, roleCanAccessFeature } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import {
+  getValueSeasion,
+  roleCanAccessFeature,
+} from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import {
   hideLoading,
   showLoading,
@@ -17,23 +20,29 @@ import {
 import Order from "../../../models/order.js";
 import { postProductIdToParam } from "../../../routes/productRoutes.js";
 
-
 const listProduct = await fetchProductAPI();
 const listVoucher = await fetchListVoucher();
-const getUserId = getValueSeasion('idUserLogedIn');
+const getUserId = getValueSeasion("idUserLogedIn");
 let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 
 const listVoucherContainerDOM = document.getElementById("listVoucherContainer");
 listVoucherContainerDOM.style.display = "none";
-const selectBoxContainerDOM = document.getElementById('selectBoxContainer');
+const selectBoxContainerDOM = document.getElementById("selectBoxContainer");
 selectBoxContainerDOM.style.backgroundColor = "#f9f9f9";
-
 
 const listRanking = ["Member", "VIP", "VVIP"];
 
 let totalPrice = 0;
 let discountedPrice = 0;
-let voucherChoseCount = 0;
+let voucherDiscountList = [];
+
+const discountedPriceDOM = document.getElementById("discountedPrice");
+
+
+const rankMember = getRanking("Member");
+const rankVIP = getRanking("VIP");
+const rankVVIP = getRanking("VVIP");
+
 roleCanAccessFeature(["CUSTOMER", "USERADMIN", "OWNER"]);
 
 showListProductInCartUser();
@@ -91,10 +100,6 @@ async function showListProductInCartUser() {
       totalPriceDOM.innerHTML = `Total Price Your Cart: ${totalPrice}$`;
       totalPriceDOM.style.margin = "5px";
 
-      const rankMember = getRanking("Member");
-      const rankVIP = getRanking("VIP");
-      const rankVVIP = getRanking("VVIP");
-
       if (userLogedIn.user.ranking == rankMember) {
         await updateTotalPriceUser(totalPrice, "0%", 1);
       } else if (userLogedIn.user.ranking == rankVIP) {
@@ -116,7 +121,7 @@ function displayListVoucherDOM() {
 }
 
 function displayListVoucher(listVoucherDOM) {
-  const headingVoucherDOM = document.getElementById('headingVoucher');
+  const headingVoucherDOM = document.getElementById("headingVoucher");
   headingVoucherDOM.style.fontSize = "20px";
   headingVoucherDOM.style.letterSpacing = "1px";
 
@@ -125,7 +130,7 @@ function displayListVoucher(listVoucherDOM) {
   listVoucherFatherDOM.style.flexDirection = "column";
   listVoucherFatherDOM.style.gap = "10px";
 
-  const applyVoucherDOM = document.getElementById('applyVoucher');
+  const applyVoucherDOM = document.getElementById("applyVoucher");
   applyVoucherDOM.style.backgroundColor = "aliceblue";
   applyVoucherDOM.style.fontSize = "16px";
   applyVoucherDOM.style.border = "1px solid #a0c8db";
@@ -142,75 +147,27 @@ function displayListVoucher(listVoucherDOM) {
     checkBoxDOM.style.display = "flex";
     checkBoxDOM.style.flex = "5%";
 
-    voucherFatherContainer.addEventListener('mouseenter', function () {
-      if (!checkBoxDOM.checked) {
-        voucherFatherContainer.style.border = "1px solid black";
-        voucherFatherContainer.style.backgroundColor = "#b3e0ff";
-      }
-    })
+    hoverVoucherOption(voucherFatherContainer, checkBoxDOM);
 
-    voucherFatherContainer.addEventListener('mouseleave', function () {
-      if (!checkBoxDOM.checked) {
-        voucherFatherContainer.style.border = "none";
-        voucherFatherContainer.style.backgroundColor = "#f9f9f9";
-      }
-    })
-
-    checkBoxDOM.addEventListener('change', function () {
-      if (checkBoxDOM.checked) {
-        voucherChoseCount++;
-        voucherFatherContainer.style.border = "1px solid black";
-        voucherFatherContainer.style.backgroundColor = "#b3e0ff";
-        console.log(voucherChoseCount);
-      }
-      else {
-        voucherChoseCount--;
-        voucherFatherContainer.style.border = "none";
-        voucherFatherContainer.style.backgroundColor = "#f9f9f9";
-        console.log(voucherChoseCount);
-      }
-    })
-    console.log(vouchers);
+    validateCheckBoxRanking(voucherFatherContainer, vouchers, checkBoxDOM);
 
     const voucherNameDOM = document.createElement("div");
     voucherNameDOM.textContent = `${vouchers.voucherName}`;
     voucherNameDOM.id = "voucherNameDOM";
-    voucherNameDOM.style.display = "flex";
-    voucherNameDOM.style.flex = "10%";
-    voucherNameDOM.style.justifyContent = "center";
+    changeStyleAndDisplayVoucherDOM(voucherNameDOM, "10%");
 
     let timeLeftDOM = document.createElement("span");
-    timeLeftDOM.style.display = "flex";
-    timeLeftDOM.style.flex = "20%";
-    timeLeftDOM.style.justifyContent = "center";
-
-    const currentTime = Math.floor(Date.now() / 1000);
-    const timeLeft = vouchers.limitTime - currentTime;
-
-    const hours = Math.floor(timeLeft / 3600);
-    const minutes = Math.floor((timeLeft % 3600) / 60);
-
-    timeLeftDOM.textContent = `Time Left: ${hours}h`;
-
-    if (minutes > 0) {
-      timeLeftDOM.textContent += ` ${minutes}m`;
-    }
-
-    if (vouchers.limitTime == null) {
-      timeLeftDOM.textContent = "Time Left : Forever";
-    }
+    changeStyleAndDisplayVoucherDOM(timeLeftDOM, "20%");
+    displayHoursAndMinutes(timeLeftDOM, vouchers);
 
     const voucherAmountDOM = document.createElement("span");
     voucherAmountDOM.textContent = `Amount: ${vouchers.amount}`;
-    voucherAmountDOM.style.display = "flex";
-    voucherAmountDOM.style.flex = "20%";
-    voucherAmountDOM.style.justifyContent = "center";
+    changeStyleAndDisplayVoucherDOM(voucherAmountDOM, "20%");
 
     const voucherDiscount = document.createElement("span");
     voucherDiscount.textContent = `Discount: ${vouchers.discount}%`;
-    voucherDiscount.style.display = "flex";
-    voucherDiscount.style.flex = "20%";
-    voucherDiscount.style.justifyContent = "center";
+    voucherDiscount.id = "discount"
+    changeStyleAndDisplayVoucherDOM(voucherDiscount, "20%");
 
     listVoucherFatherDOM.appendChild(voucherFatherContainer);
     voucherFatherContainer.appendChild(checkBoxDOM);
@@ -221,25 +178,98 @@ function displayListVoucher(listVoucherDOM) {
   });
 }
 
-window.applyVoucher = function applyVoucher() {
-  const checkboxDOM = document.getElementById('checkboxDOM');
-  const voucherNameDOM = document.getElementById('voucherNameDOM').textContent;
-  // if (checkboxDOM.checked) {
-  //   console.log("true");
-  //   console.log(totalPrice);
-  // }
-  // else {
-  //   console.log("false");
-  // }
-  console.log(userLogedIn);
+function validateCheckBoxRanking(voucherFatherContainer, vouchersDOM, checkBoxDOM) {
+
+  checkBoxDOM.addEventListener("change", function () {
+    if (checkBoxDOM.checked) {
+      voucherFatherContainer.style.border = "1px solid black";
+      voucherFatherContainer.style.backgroundColor = "#b3e0ff";
+      if (userLogedIn.user.ranking == rankVVIP) {
+        if (voucherDiscountList.length > 1) {
+          checkBoxDOM.checked = false;
+          window.alert("You can choose only 1 voucher");
+        }
+        else {
+          voucherDiscountList.push(vouchersDOM)
+        }
+      }
+    } else {
+      voucherDiscountList = voucherDiscountList.filter((vouchers) => vouchers != vouchersDOM)
+      voucherFatherContainer.style.border = "none";
+      voucherFatherContainer.style.backgroundColor = "#f9f9f9";
+    }
+  });
+
 }
 
+function displayHoursAndMinutes(timeLeftDOM, vouchers) {
+  const currentTime = Math.floor(Date.now() / 1000);
+  const timeLeft = vouchers.limitTime - currentTime;
 
-async function updateTotalPriceUser(totalPrice, discountPercentDOM, discountPersonNumber) {
+  const hours = Math.floor(timeLeft / 3600);
+  const minutes = Math.floor((timeLeft % 3600) / 60);
+
+  timeLeftDOM.textContent = `Time Left: ${hours}h`;
+
+  if (minutes > 0) {
+    timeLeftDOM.textContent += ` ${minutes}m`;
+  }
+
+  if (vouchers.limitTime == null) {
+    timeLeftDOM.textContent = "Time Left : Forever";
+  }
+}
+
+function changeStyleAndDisplayVoucherDOM(voucherDOM, flexPercent) {
+  voucherDOM.style.display = "flex";
+  voucherDOM.style.flex = flexPercent;
+  voucherDOM.style.justifyContent = "center";
+}
+
+function hoverVoucherOption(voucherFatherContainer, checkBoxDOM) {
+  voucherFatherContainer.addEventListener("mouseenter", function () {
+    if (!checkBoxDOM.checked) {
+      voucherFatherContainer.style.border = "1px solid black";
+      voucherFatherContainer.style.backgroundColor = "#b3e0ff";
+    }
+  });
+
+  voucherFatherContainer.addEventListener("mouseleave", function () {
+    if (!checkBoxDOM.checked) {
+      voucherFatherContainer.style.border = "none";
+      voucherFatherContainer.style.backgroundColor = "#f9f9f9";
+    }
+  });
+}
+
+window.applyVoucher = function applyVoucher() {
+  try {
+    showLoading("loadingScreen");
+    const voucherNameDOM = document.getElementById("voucherNameDOM").textContent;
+    let percentDiscount = 0;
+    voucherDiscountList.forEach((vouchers) => {
+      percentDiscount += vouchers.discount / 100;
+    })
+    userLogedIn.totalPrice -= userLogedIn.totalPrice * percentDiscount;
+    discountedPriceDOM.innerHTML = `Total Price: ${userLogedIn.totalPrice}$`;
+    console.log(userLogedIn.totalPrice);
+  }
+  catch (error) {
+    console.log("apply voucher get error", error);
+  }
+  finally {
+    hideLoading("loadingScreen");
+  }
+};
+
+async function updateTotalPriceUser(
+  totalPrice,
+  discountPercentDOM,
+  discountPersonNumber
+) {
   try {
     showLoading("loadingScreen");
     const rankMember = getRanking("Member");
-    const discountedPriceDOM = document.getElementById("discountedPrice");
     discountedPriceDOM.style.margin = "5px";
     discountedPriceDOM.style.color = "#db0000";
 
@@ -259,11 +289,9 @@ async function updateTotalPriceUser(totalPrice, discountPercentDOM, discountPers
     }
   } catch (error) {
     console.log("update total price user get error", error);
-  }
-  finally {
+  } finally {
     hideLoading("loadingScreen");
   }
-
 }
 
 async function removeProduct(productNameDOM) {
@@ -296,7 +324,6 @@ async function removeProduct(productNameDOM) {
         location.reload();
       }, 100);
     }
-
   } catch (error) {
     console.error(`Delete error: ${error}`);
   }
@@ -306,10 +333,10 @@ window.chooseVoucher = function chooseVoucher() {
   listVoucherContainerDOM.style.display = "flex";
   listVoucherContainerDOM.onclick = () => {
     listVoucherContainerDOM.style.display = "none";
-  }
+  };
   selectBoxContainerDOM.onclick = (event) => {
     event.stopPropagation();
-  }
+  };
 };
 
 window.payment = async function payment() {
@@ -364,16 +391,18 @@ window.back = function back() {
 };
 
 function editProductInCart(productID) {
-  window.location.href = `../editProductInCart/editProductInCart.html${postProductIdToParam(productID)}`
+  window.location.href = `../editProductInCart/editProductInCart.html${postProductIdToParam(
+    productID
+  )}`;
   console.log(productName);
 }
 
-function isVoucherChose() {
-  return listVoucher.some((vouchers))
+function getVoucher(voucherNameDOM) {
+  return listVoucher.find((vouchers) => vouchers.voucherName == voucherNameDOM);
 }
 
 function filterVoucherVaild() {
-  return listVoucher.filter((vouchers) => vouchers.limitTime != 0 || vouchers.limitTime == null)
+  return listVoucher.filter(
+    (vouchers) => vouchers.limitTime != 0 || vouchers.limitTime == null
+  );
 }
-
-
