@@ -169,9 +169,6 @@ function displayListVoucher(listVoucherDOM) {
         voucherFatherContainer.style.backgroundColor = "#f9f9f9";
         console.log(voucherChoseCount);
       }
-      if (voucherChoseCount == 2) {
-        console.log("stop");
-      }
     })
     console.log(vouchers);
 
