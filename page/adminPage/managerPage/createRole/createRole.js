@@ -1,16 +1,16 @@
 import { fetchCartFromUserLogedIn } from "../../../../controllers/cartControllers.js";
 import { createRole$, fetchListRole } from "../../../../controllers/rolesControllers.js";
-import { checkRoleUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { getValueSeasion, roleCanAccessFeature } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import { RoleOwner, RoleUserAdmin } from "../../../../models/rolesModels.js";
-import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
 
 const listRole = await fetchListRole()
-const getUserIDInParam = getValueInQuerryParam('cartID');
-let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
+const getUserId = getValueSeasion('idUserLogedIn');
+let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 const codeNameDOM = document.getElementById('codeName');
 const rolesSelectedDOM = document.getElementById('roles');
-checkRoleUserLogedIn(userLogedIn);
+roleCanAccessFeature(["OWNER"]);
+
 hideLoading("loadingScreen");
 
 window.createCodeRoles = async function createCodeRoles() {
@@ -100,5 +100,5 @@ function isCodeNameExisted(codeNameInput) {
 }
 
 window.back = function back() {
-    window.location.href = `../accountManager/accountManager.html${postCartIDToParam(userLogedIn.cartID)}`
+    window.location.href = `../accountManager/accountManager.html`
 }

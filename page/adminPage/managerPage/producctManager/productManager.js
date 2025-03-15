@@ -4,16 +4,15 @@ import {
     fetchProductAPI,
     createProduct,
 } from "../../../../controllers/productControllers.js";
-import { checkRoleUserLogedIn, removeInforUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { getValueSeasion, removeInforUserLogedIn, roleCanAccessFeature } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import Product from "../../../../models/product.js";
-import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
 import { postCartIDAndProductIDToParam } from "../../../../routes/productRoutes.js";
 import { isValidImageUrl } from "../../../../validation/imageValidation.js";
 
 const listProduct = await fetchProductAPI();
-const getUserIDInParam = getValueInQuerryParam('cartID');
-let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
+const getUserId = getValueSeasion('idUserLogedIn');
+let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 
 const createProductDOM = document.getElementById('createProduct');
 createProductDOM.style.margin = "20px";
@@ -26,7 +25,8 @@ const previewImgDOM = document.getElementById('previewImg');
 
 
 let lastImgPreviewDOM = "";
-checkRoleUserLogedIn(userLogedIn);
+roleCanAccessFeature(["USERADMIN", "OWNER"]);
+
 displayProduct();
 
 
@@ -244,7 +244,7 @@ window.logOut = function logOut() {
 };
 
 window.switchToShoppingPage = function switchToShoppingPage() {
-    window.location.href = `../../../userPage/shoppingCart/shoppCart.html${postCartIDToParam(userLogedIn.cartID)}`;
+    window.location.href = `../../../userPage/shoppingCart/shoppCart.html`;
 }
 
 

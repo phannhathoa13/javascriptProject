@@ -1,18 +1,21 @@
 import { fetchCartFromUserLogedIn, updateCartInAccount } from "../../../controllers/cartControllers.js";
 import { fetchListOrder } from "../../../controllers/orderControllers.js";
-import { checkRoleUserLogedIn } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { getValueSeasion, roleCanAccessFeature } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
-import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
+import { getValueInQuerryParam } from "../../../routes/cartRoutes.js";
 
-const getuserId = getValueInQuerryParam("cartID");
 const orderHistoryID = getValueInQuerryParam("orderID");
 const listOrder = await fetchListOrder();
-let userLogedIn = await fetchCartFromUserLogedIn(getuserId);
+
+const getUserId = getValueSeasion('idUserLogedIn');
+const userLogedIn = await fetchCartFromUserLogedIn(getUserId);
+
 const listOrderHistoryDOM = document.getElementById('listOrderHistory');
 const totalPriceDOM = document.getElementById('totalPrice');
 const orderIdDOM = document.getElementById('orderId');
 const paidTimeDOM = document.getElementById('paidTime');
-checkRoleUserLogedIn(userLogedIn);
+roleCanAccessFeature(["CUSTOMER", "USERADMIN", "OWNER"]);
+
 
 displayProductsOrder();
 function displayProductsOrder() {
@@ -65,7 +68,7 @@ window.reOrder = async function reOrder() {
             const updatedCart = await updateCartInAccount(userLogedIn.cartID, userLogedIn, purchasedProducts, updatedTotalPrice);
             if (updatedCart) {
                 userLogedIn = updatedCart;
-                window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`;
+                window.location.href = `../viewCart/viewCart.html`;
             }
         }
         else {
@@ -91,7 +94,7 @@ window.createNewOrder = async function createNewOrder() {
             userLogedIn = updatedCart;
             hideLoading("loadingScreen");
             setTimeout(() => {
-                window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`;
+                window.location.href = `../viewCart/viewCart.html`;
             }, 100);
         }
     } catch (error) {
@@ -118,7 +121,7 @@ window.addProductsToCart = async function addProductsToCart() {
             userLogedIn = updatedCart;
             hideLoading("loadingScreen");
             setTimeout(() => {
-                window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`;
+                window.location.href = `../viewCart/viewCart.html`;
             }, 100);
         }
     } catch (error) {
@@ -131,7 +134,7 @@ window.cancel = function cancel() {
 }
 
 window.back = function back() {
-    window.location.href = `../orderHistory/orderHistory.html${postCartIDToParam(userLogedIn.cartID)}`;
+    window.location.href = `../orderHistory/orderHistory.html`;
 }
 
 function getProductExisted(productPurchased) {

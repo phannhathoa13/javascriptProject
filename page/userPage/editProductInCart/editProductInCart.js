@@ -1,47 +1,51 @@
 
-import { fetchCartFromApi, updateCartInAccount } from "../../../controllers/cartControllers.js";
+import { fetchCartFromApi, fetchCartFromUserLogedIn, updateCartInAccount } from "../../../controllers/cartControllers.js";
 import { fetchProductAPI } from "../../../controllers/productControllers.js";
-import { checkRoleUserLogedIn } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { getValueSeasion, roleCanAccessFeature } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
-import { getValueInQuerryParam, postCartIDToParam } from "../../../routes/cartRoutes.js";
+import { getValueInQuerryParam } from "../../../routes/cartRoutes.js";
 
-const valueInParam = getValueInQuerryParam('product');
 
 const cartList = await fetchCartFromApi();
 
-let userLogedIn = isUserLogedIn();
+const getUserId = getValueSeasion('idUserLogedIn');
+let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
+
 const listProduct = await fetchProductAPI();
 
 let isAmountAvaiable = false;
-checkRoleUserLogedIn(userLogedIn);
+roleCanAccessFeature(["CUSTOMER", "USERADMIN", "OWNER"]);
+
 displayValueOfProduct();
 
 function displayValueOfProduct() {
     try {
+        const valueInParam = getValueInQuerryParam('productID');
+
+        const productEdit = getProductInCart(valueInParam);
         showLoading('loadingScreen');
 
         const imageProductDOM = document.getElementById('previewImg');
-        imageProductDOM.src = valueInParam.imageProduct;
+        imageProductDOM.src = productEdit.imageProduct;
 
         const productNameInput = document.getElementById('productName');
-        productNameInput.value = valueInParam.productName;
+        productNameInput.value = productEdit.productName;
         productNameInput.style.position = "relative";
         productNameInput.style.bottom = "24px";
 
         const amountInput = document.getElementById('amount');
-        amountInput.value = valueInParam.amount;
+        amountInput.value = productEdit.amount;
         amountInput.style.position = "relative";
         amountInput.style.bottom = "24px";
 
         const priceInPut = document.getElementById('price');
-        priceInPut.value = valueInParam.price;
+        priceInPut.value = productEdit.price;
         priceInPut.style.position = "relative";
         priceInPut.style.bottom = "24px";
 
         const buttonSaveDOM = document.getElementById('buttonSave');
         buttonSaveDOM.style.position = "relative";
         buttonSaveDOM.style.bottom = "24px";
-
     }
     catch (error) {
         console.log("Display value of Product In Edit error", error);
@@ -53,12 +57,18 @@ function displayValueOfProduct() {
 
 window.save = async function save() {
     try {
+        showLoading('loadingScreen');
         const updatedAndValidatedCart = validationAmountProduct();
 
         if (isAmountAvaiable) {
             const updateTotalPrice = updatedAndValidatedCart.reduce((total, products) => total + products.amount * products.price, 0)
             await updateCartInAccount(userLogedIn.cartID, userLogedIn, updatedAndValidatedCart, updateTotalPrice);
-            window.location.href = `../viewCart/viewCart.html${postCartIDToParam(userLogedIn.cartID)}`;
+            hideLoading('loadingScreen');
+
+            setTimeout(() => {
+                window.alert("Edit succesed");
+                window.location.href = `../viewCart/viewCart.html`;
+            }, 100);
         }
 
     } catch (error) {
@@ -71,7 +81,7 @@ function validationAmountProduct() {
     const amountValue = document.getElementById('amount').value;
     return userLogedIn.products.map((products) => {
         if (products.productName == productNameInput) {
-            const productExisted = getProductExistedInListProduct(products.productName);
+            const productExisted = getProduct(products.productName);
             if (!productExisted) {
                 isAmountAvaiable = false;
                 window.alert("The product is not existed");
@@ -88,7 +98,6 @@ function validationAmountProduct() {
                 return products;
             }
             isAmountAvaiable = true;
-            window.alert("Edit succesed");
             return {
                 ...products,
                 amount: parseFloat(amountValue)
@@ -99,8 +108,12 @@ function validationAmountProduct() {
 }
 
 
-function getProductExistedInListProduct(productInCart) {
+function getProduct(productInCart) {
     return listProduct.find((product) => product.productName == productInCart)
+}
+
+function getProductInCart(productID) {
+    return userLogedIn.products.find((product) => product.id == productID);
 }
 
 function isUserLogedIn() {

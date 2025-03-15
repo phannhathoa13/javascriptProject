@@ -9,14 +9,16 @@
 }
 
 .selectBoxContainer {
+  display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 300px;
-  background-color: white;
   text-align: center;
-  position: fixed;
-  left: 50%;
-  top: 6%;
-  display: flex;
   gap: 10px;
+  z-index: 3;
+  width: 600px;
+  background-color: white;
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -20%);
 }

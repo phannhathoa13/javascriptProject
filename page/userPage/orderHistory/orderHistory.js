@@ -1,22 +1,19 @@
 import { fetchCartFromUserLogedIn } from "../../../controllers/cartControllers.js";
 import { fetchListOrder } from "../../../controllers/orderControllers.js";
-import { checkRoleUserLogedIn } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { getValueSeasion, roleCanAccessFeature } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import {
   hideLoading,
   showLoading,
 } from "../../../feautureReuse/loadingScreen.js";
-import {
-  getValueInQuerryParam,
-  postCartIDToParam,
-} from "../../../routes/cartRoutes.js";
-import { postCartIdAndOrderIDToParam } from "../../../routes/orderRoutes.js";
+import { postOrderIdToParam } from "../../../routes/orderRoutes.js";
 
-const getuserId = getValueInQuerryParam("cartID");
-const userLogedIn = await fetchCartFromUserLogedIn(getuserId);
+const getUserId = getValueSeasion('idUserLogedIn');
+const userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 const orderList = await fetchListOrder();
 const dateOrderDOM = document.getElementById("dateOrder");
 
-checkRoleUserLogedIn(userLogedIn);
+roleCanAccessFeature(["CUSTOMER", "USERADMIN", "OWNER"]);
+
 
 
 displayOrderHistory();
@@ -27,9 +24,7 @@ function displayOrderHistory() {
     const orderHistory = getOrderHistory();
     if (orderHistory.length == 0) {
       window.alert("You dont have any order history");
-      window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(
-        userLogedIn.cartID
-      )}`;
+      window.location.href = `../shoppingCart/shoppCart.html`;
     } else {
       displayOrderContainerProducts(orderHistory, "none");
       console.log(orderHistory);
@@ -203,7 +198,7 @@ function displayOrderContainerProducts(orderHistory, orderDivDOMStyleDisplay) {
         }
 
         viewDetails.onclick = () => {
-          window.location.href = `../orderDetails/orderDetails.html${postCartIdAndOrderIDToParam(userLogedIn.cartID, order.orderID)}`;
+          window.location.href = `../orderDetails/orderDetails.html${postOrderIdToParam(order.orderID)}`;
         }
 
       })
@@ -237,9 +232,7 @@ function getOrderHistory() {
 }
 
 window.back = function back() {
-  window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(
-    getuserId
-  )}`;
+  window.location.href = `../shoppingCart/shoppCart.html`;
 };
 
 

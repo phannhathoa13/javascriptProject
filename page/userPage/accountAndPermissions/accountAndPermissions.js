@@ -10,16 +10,12 @@ import {
   editAccount$,
   fetchUserAPI,
 } from "../../../controllers/userController.js";
-import { checkRoleUserLogedIn } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { getValueSeasion, roleCanAccessFeature } from "../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import {
   hideLoading,
   showLoading,
 } from "../../../feautureReuse/loadingScreen.js";
 import User from "../../../models/user.js";
-import {
-  getValueInQuerryParam,
-  postCartIDToParam,
-} from "../../../routes/cartRoutes.js";
 import {
   validationEmail,
   validationPassword,
@@ -28,8 +24,9 @@ import {
 const listUser = await fetchUserAPI();
 const listRoleReuquested = await fetchListRequestRole$();
 
-const getUserIDInParam = getValueInQuerryParam("cartID");
-let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
+const getUserId = getValueSeasion('idUserLogedIn');
+
+let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 
 const passwordDOM = document.getElementById("password");
 const confirmPasswordDOM = document.getElementById("confirmPassword");
@@ -39,31 +36,32 @@ const passwordInputDOM = document.getElementById("passwordInput");
 const confirmPasswordInputDOM = document.getElementById("confirmPasswordInput");
 const emailInputDOM = document.getElementById("emailInput");
 const requestRoleButtonDOM = document.getElementById("requestRole");
-const socket = new WebSocket("ws://localhost:3000");
+// const socket = new WebSocket("ws://localhost:3000");
 
 const listRoles = ["CUSTOMER", "USERADMIN", "OWNER"];
-socket.onopen = () => {
-  console.log("✅ Kết nối WebSocket thành công");
-};
 
-socket.onmessage = (event) => {
-  console.log(event);
+// socket.onopen = () => {
+//   console.log("✅ Kết nối WebSocket thành công");
+// };
 
-  const notification = JSON.parse(event.data);
-  console.log("🔔 Nhận thông báo:", notification);
-};
+// socket.onmessage = (event) => {
+//   console.log(event);
 
-socket.onclose = () => {
-  console.log("❌ WebSocket bị đóng!");
-};
+//   const notification = JSON.parse(event.data);
+//   console.log("🔔 Nhận thông báo:", notification);
+// };
 
-window.sendNotification = function sendNotification() {
-  const test = {
-    type:"cussess",
-    message: "test",
-  };
-  socket.send(JSON.stringify(test));
-};
+// socket.onclose = () => {
+//   console.log("❌ WebSocket bị đóng!");
+// };
+
+// window.sendNotification = function sendNotification() {
+//   const test = {
+//     type: "cussess",
+//     message: "test",
+//   };
+//   socket.send(JSON.stringify(test));
+// };
 
 let isPasswordValid = false;
 let isConfirmPasswordValid = false;
@@ -71,7 +69,8 @@ let isEmailValid = false;
 
 const userAccountInfor = userLogedIn.user;
 const userLogedInInformation = getUserID(userAccountInfor.username);
-checkRoleUserLogedIn(userLogedIn);
+roleCanAccessFeature(["CUSTOMER", "USERADMIN", "OWNER"]);
+
 displayAccount();
 checkRequestRole();
 
@@ -377,7 +376,5 @@ function errorMassage(valueInput, textWarning) {
 }
 
 window.back = function back() {
-  window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(
-    userLogedIn.cartID
-  )}`;
+  window.location.href = `../shoppingCart/shoppCart.html`;
 };

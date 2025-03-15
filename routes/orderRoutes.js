@@ -8,4 +8,8 @@ function postCartIdAndOrderIDToParam(cartID, orderID) {
     const orderIDString = encodeURIComponent(JSON.stringify(orderID));
     return `?cartID=${cartIDString}&orderID=${orderIDString}`;
 }
-export { getValueInQuerryParam , postCartIdAndOrderIDToParam };
+function postOrderIdToParam(orderID) {
+    const orderIDString = encodeURIComponent(JSON.stringify(orderID));
+    return `?orderID=${orderIDString}`;
+}
+export { getValueInQuerryParam, postCartIdAndOrderIDToParam, postOrderIdToParam };

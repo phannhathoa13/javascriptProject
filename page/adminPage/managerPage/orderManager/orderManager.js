@@ -1,11 +1,11 @@
 import { fetchListOrder } from "../../../../controllers/orderControllers.js";
 
 const listOrder = await fetchListOrder();
+
 showListOrderInDOM();
 window.searchOrderByUser = function searchOrderByUser(event) {
     const usernameInput = event.target.value;
     console.log(usernameInput);
-
 }
 
 function showListOrderInDOM() {

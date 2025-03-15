@@ -1,25 +1,29 @@
+import { fetchCartFromUserLogedIn } from "../../../../../controllers/cartControllers.js";
 import { editAccount$, fetchUserAPI } from "../../../../../controllers/userController.js";
-import { checkRoleUserLogedIn } from "../../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { getValueSeasion, roleCanAccessFeature } from "../../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../../feautureReuse/loadingScreen.js";
 import User from "../../../../../models/user.js";
-import { getUserIdFromParam, postUserIDToParam } from "../../../../../routes/userRoutes.js";
+import { getUserIdFromParam } from "../../../../../routes/userRoutes.js";
 
 const listUser = await fetchUserAPI();
 const userIdFromParam = getUserIdFromParam('userID');
-let userLogedIn = getUserLogedIn(userIdFromParam);
+let getUserEdit = getUserLogedIn(userIdFromParam);
+
+const getUserId = getValueSeasion('idUserLogedIn');
+let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 
 const usernameDOM = document.getElementById('username');
 const passwordDOM = document.getElementById('password');
 const emailDOM = document.getElementById('email');
-checkRoleUserLogedIn(userLogedIn);
+roleCanAccessFeature(["OWNER"]);
 displayUserToInput();
 
 function displayUserToInput() {
     try {
         showLoading("loadingScreen");
-        usernameDOM.value = userLogedIn.username;
-        passwordDOM.value = userLogedIn.password;
-        emailDOM.value = userLogedIn.email;
+        usernameDOM.value = getUserEdit.username;
+        passwordDOM.value = getUserEdit.password;
+        emailDOM.value = getUserEdit.email;
     } catch (error) {
         console.log("display user to input get error", error);
     }
@@ -37,18 +41,18 @@ document.getElementById('editAccount').addEventListener('submit', async function
             formData.get('username'),
             formData.get('password'),
             formData.get('email'),
-            userLogedIn.createdAt,
-            userLogedIn.role,
+            getUserEdit.createdAt,
+            getUserEdit.role,
         )
         if (validateInput(user.username, user.email)) {
-            const updatedAccount = await editAccount$(userLogedIn.idUser, user);
+            const updatedAccount = await editAccount$(getUserEdit.idUser, user);
             if (updatedAccount) {
-                userLogedIn = updatedAccount;
+                getUserEdit = updatedAccount;
                 hideLoading('loadingScreen');
 
                 setTimeout(() => {
                     window.alert("Edit succeed!");
-                    window.location.href = `../accountManager.html${postUserIDToParam(userLogedIn.cartID)}`
+                    window.location.href = `../accountManager.html`
                 }, 100);
             }
         }
@@ -91,11 +95,11 @@ function validateInput(usernameInput, emailInput) {
 }
 
 function isUsernameExisted(usernameInPut) {
-    return listUser.some((users) => users.username == usernameInPut && users.idUser != userLogedIn.idUser);
+    return listUser.some((users) => users.username == usernameInPut && users.idUser != getUserEdit.idUser);
 }
 
 function isEmailExisted(emailInPut) {
-    return listUser.some((users) => users.email == emailInPut && users.idUser != userLogedIn.idUser);
+    return listUser.some((users) => users.email == emailInPut && users.idUser != getUserEdit.idUser);
 }
 
 function getUserLogedIn(userID) {

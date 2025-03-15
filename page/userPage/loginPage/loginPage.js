@@ -1,6 +1,5 @@
 import { fetchUserAPI } from "../../../controllers/userController.js";
 import { hideLoading, showLoading } from "../../../feautureReuse/loadingScreen.js";
-import { postCartIDToParam } from "../../../routes/cartRoutes.js";
 
 const listUser = await fetchUserAPI();
 hideLoading('loadingScreen');
@@ -37,7 +36,7 @@ document.getElementById('form').addEventListener('submit', function (event) {
 
         setTimeout(() => {
             window.alert("Login successed");
-            window.location.href = `../shoppingCart/shoppCart.html${postCartIDToParam(parseInt(userAcccount.idUser))}`;
+            window.location.href = `../shoppingCart/shoppCart.html`;
             return;
         }, 100);
     }

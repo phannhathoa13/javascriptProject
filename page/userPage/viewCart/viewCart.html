@@ -1,34 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="../../../feautureReuse/loadingScreen.css" />
-    <link rel="stylesheet" href="viewCart.css" />
 
-    <title>View Cart</title>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../../../feautureReuse/loadingScreen.css" />
+  <link rel="stylesheet" href="viewCart.css" />
 
-  <body>
-    <div id="loadingScreen" class="loading-overlay">
-      <div class="spinner"></div>
+  <title>View Cart</title>
+</head>
+
+<body>
+  <div id="loadingScreen" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+  <button onclick="chooseVoucher()">Choose Vouchers</button>
+  <div id="listVoucherContainer" class="listVoucherContainer">
+    <div id="selectBoxContainer" class="selectBoxContainer">
+      <div id="headingVoucher">Choose Voucher</div>
+      <div id="listVoucher"></div>
+      <button id="applyVoucher" onclick="applyVoucher()">Apply Voucher</button>
     </div>
-    <button onclick="chooseVoucher()">Choose Vouchers</button>
-    <div id="listVoucherContainer" class="listVoucherContainer">
-      <div class="selectBoxContainer">
-        <div>Choose Voucher</div>
-        <div id="listVoucher"></div>
-        <button onclick="applyVoucher()">Apply Voucher</button>
-      </div>
-    </div>
-    <div id="listProductInCart"></div>
-    <div id="totalPrice"></div>
-    <div id="rankingDiscount"></div>
-    <div id="discountedPrice"></div>
-    <button onclick="negativeToShoppingCart()">Back</button>
-    <button onclick="payment()">Payment</button>
+  </div>
+  <div id="listProductInCart"></div>
+  <div id="totalPrice"></div>
+  <div id="rankingDiscount"></div>
+  <div id="discountedPrice"></div>
+  <button onclick="back()">Back</button>
+  <button onclick="payment()">Payment</button>
 
-    <script type="module" src="../viewCart/viewCart.js"></script>
-  </body>
+  <script type="module" src="../viewCart/viewCart.js"></script>
+</body>
+
 </html>

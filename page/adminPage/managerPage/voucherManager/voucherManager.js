@@ -5,20 +5,19 @@ import {
   removeVoucher$,
   updateVoucher$,
 } from "../../../../controllers/voucherController.js";
-import { checkRoleUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import {
+  getValueSeasion,
+  roleCanAccessFeature,
+} from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import {
   hideLoading,
   showLoading,
 } from "../../../../feautureReuse/loadingScreen.js";
 import Voucher from "../../../../models/voucherModels.js";
-import {
-  getValueInQuerryParam,
-  postCartIDToParam,
-} from "../../../../routes/cartRoutes.js";
 import { voucherNameRegex } from "../../../../validation/voucherValidate.js";
 
-const getUserIDInParam = getValueInQuerryParam("cartID");
-let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
+const getUserId = getValueSeasion("idUserLogedIn");
+let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 
 const listVoucher = await fetchListVoucher();
 
@@ -41,7 +40,8 @@ voucherNameWarning.style.margin = "15px";
 
 let isVoucherNameVaild = false;
 
-checkRoleUserLogedIn(userLogedIn);
+roleCanAccessFeature(["OWNER"]);
+
 displayListVoucher();
 async function displayListVoucher() {
   try {
@@ -66,11 +66,11 @@ async function displayListVoucher() {
       vouchersDOM.style.margin = "10px";
       vouchersDOM.textContent = `Voucher Name: " ${vouchers.voucherName} " ,  Amount: ${vouchers.amount}, Discount: ${vouchers.discount}, Time Left: ${timeLeftTextDOM}, State: ${vouchers.state}`;
 
-      if (hours == 0 && minutes == 0) {
+      if (hours <= 0 && minutes <= 0 && voucher.limitTime != null) {
         voucher.state = "Expired";
         voucher.limitTime = 0;
-        vouchersDOM.textContent = `Voucher Name: " ${vouchers.voucherName} " ,  Amount: ${vouchers.amount}, Discount: ${vouchers.discount}, Time Left: " ${vouchers.state} ", State: " ${vouchers.state} "`;
-        updateVoucher$(voucher);
+        vouchersDOM.textContent = `Voucher Name: " ${vouchers.voucherName} " ,  Amount: ${vouchers.amount}, Discount: ${vouchers.discount}, State: " ${vouchers.state} "`;
+        updateVoucherExpired(voucher);
       }
 
       if (vouchers.limitTime == null) {
@@ -109,6 +109,10 @@ checkBoxLimitTimeDOM.onchange = () => {
     timeLimitDOM.style.display = "none";
   }
 };
+
+async function updateVoucherExpired(voucher) {
+  await updateVoucher$(voucher.voucherID, voucher);
+}
 
 window.createVoucher = async function createVoucher() {
   try {
@@ -199,12 +203,24 @@ function validateVoucher(voucherNameValue, voucherAmountValue, discountValue) {
     window.alert("Voucher amount must over 0");
     hideLoading("loadingScreenDOM");
     return false;
-  } else if (!discountValue) {
+  }
+  else if (voucherAmountValue > 1000) {
+    window.alert("Voucher amount can't be more than 1000");
+    hideLoading("loadingScreenDOM");
+    return false;
+  }
+  else if (!discountValue) {
     window.alert("Please input voucher discount");
     hideLoading("loadingScreenDOM");
     return false;
-  } else if (discountValue <= 0) {
+  }
+  else if (discountValue <= 0) {
     window.alert("Voucher discount must over 0");
+    hideLoading("loadingScreenDOM");
+    return false;
+  }
+  else if (discountValue >= 100) {
+    window.alert("Voucher discount can't bbe more than 100%");
     hideLoading("loadingScreenDOM");
     return false;
   } else {
@@ -228,7 +244,7 @@ window.validateOnInputVoucherName = function validateOnInputVoucherName(event) {
     isVoucherNameVaild = false;
   } else if (!voucherNameRegex(voucherNameInput)) {
     voucherNameWarning.style.color = "red";
-    voucherNameWarning.textContent = `Voucher name must be exactly 8 characters, containing only uppercase letters`;
+    voucherNameWarning.textContent = `Voucher name can only contain up to 8 uppercase letters and it must be upercase letters`;
     voucherNameInputDOM.style.border = "2px solid red";
     isVoucherNameVaild = false;
   } else if (isVoucherExisted(voucherNameInput)) {
@@ -249,7 +265,5 @@ function getVoucher(voucherIDDOM) {
 }
 
 window.back = function back() {
-  window.location.href = `../../../userPage/shoppingCart/shoppCart.html${postCartIDToParam(
-    userLogedIn.cartID
-  )}`;
+  window.location.href = `../../../userPage/shoppingCart/shoppCart.html`;
 };

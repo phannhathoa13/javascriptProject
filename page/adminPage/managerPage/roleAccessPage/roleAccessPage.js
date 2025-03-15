@@ -1,18 +1,18 @@
 import { fetchCartFromApi, fetchCartFromUserLogedIn, updateCart$ } from "../../../../controllers/cartControllers.js";
 import { fetchListRequestRole$, removeRequest$ } from "../../../../controllers/rolesControllers.js"
 import { editRoleAccount$, fetchUserAPI } from "../../../../controllers/userController.js";
-import { checkRoleUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { getValueSeasion, roleCanAccessFeature } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
-import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
 
 const listUser = await fetchUserAPI();
 const listCart = await fetchCartFromApi();
 const listRequests = await fetchListRequestRole$();
-const getUserIDInParam = getValueInQuerryParam("cartID");
-let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
+const getUserId = getValueSeasion('idUserLogedIn');
+let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 
 const userInformation = userLogedIn.user;
-checkRoleUserLogedIn(userLogedIn);
+roleCanAccessFeature(["USERADMIN", "OWNER"]);
+
 displayListRequestRole();
 
 
@@ -24,9 +24,7 @@ function displayListRequestRole() {
   if (listCustomerRequest.length == 0 && listAdminRequest.length == 0) {
     hideLoading("loadingScreenDOM");
     window.alert("There are currently no requests.");
-    window.location.href = `../../../userPage/shoppingCart/shoppCart.html${postCartIDToParam(
-      userLogedIn.cartID
-    )}`;
+    window.location.href = `../../../userPage/shoppingCart/shoppCart.html`;
   } else {
     if (userInformation.role == "USERADMIN") {
       displayListRequestDOM(listCustomerRequest);
@@ -144,7 +142,5 @@ function getRequestByUser(usernameByUser) {
 }
 
 window.back = function back() {
-  window.location.href = `../../../userPage/shoppingCart/shoppCart.html${postCartIDToParam(
-    userLogedIn.cartID
-  )}`;
+  window.location.href = `../../../userPage/shoppingCart/shoppCart.html`;
 };

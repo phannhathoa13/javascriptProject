@@ -1,10 +1,10 @@
 
 import { fetchCartFromUserLogedIn } from "../../../../controllers/cartControllers.js";
 import { fetchProductAPI, updateProduct } from "../../../../controllers/productControllers.js";
-import { checkRoleUserLogedIn } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
+import { getValueSeasion, roleCanAccessFeature } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
 import Product from "../../../../models/product.js";
-import { getValueInQuerryParam, postCartIDToParam } from "../../../../routes/cartRoutes.js";
+import { getValueInQuerryParam } from "../../../../routes/cartRoutes.js";
 import { isValidImageUrl } from "../../../../validation/imageValidation.js";
 
 
@@ -19,10 +19,10 @@ const imageProductDOM = document.getElementById('previewImg');
 imageProductDOM.style.margin = "5px";
 
 
-const getUserIDInParam = getValueInQuerryParam('cartID');
-let userLogedIn = await fetchCartFromUserLogedIn(getUserIDInParam);
+const getUserId = getValueSeasion('idUserLogedIn');
+let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 let previusImage = "";
-checkRoleUserLogedIn(userLogedIn);
+roleCanAccessFeature(["USERADMIN", "OWNER"]);
 displayProductToInput();
 function displayProductToInput() {
     try {
@@ -104,7 +104,7 @@ document.getElementById('editValue').addEventListener('submit', async function (
                     await updateProduct(getProductId, product);
                     setTimeout(() => {
                         window.alert("edit successed");
-                        window.location.href = `../producctManager/productManager.html${postCartIDToParam(userLogedIn.cartID)}`;
+                        window.location.href = `../producctManager/productManager.html`;
                     }, 100);
                 }
             }
@@ -127,7 +127,7 @@ document.getElementById('editValue').addEventListener('submit', async function (
 
                         setTimeout(() => {
                             window.alert("edit successed");
-                            window.location.href = `../producctManager/productManager.html${postCartIDToParam(userLogedIn.cartID)}`;;
+                            window.location.href = `../producctManager/productManager.html`;;
                         }, 300);
                     }
                 }
