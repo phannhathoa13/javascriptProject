@@ -7,6 +7,12 @@ function postUserIDToParam(userID) {
     return `?userID=${valueString}`
 }
 
+function postRoleRequestId(roleRequestId) {
+    const valueString = encodeURIComponent(JSON.stringify(roleRequestId));
+    return `?roleRequestId=${valueString}`
+}
+
+
 function getUserIdFromParam(string) {
     const param = getValueInParam();
     const getUserIDInParam = JSON.parse(decodeURIComponent(param.get(string)));
@@ -19,4 +25,4 @@ function postTwoValueToParam(value, newValue) {
     const newValueString = encodeURIComponent(JSON.stringify(newValue));
     return `?value=${valueString}&newValue=${newValueString}`;
 }
-export { getValueInParam, postTwoValueToParam, postUserIDToParam,getUserIdFromParam };
+export { getValueInParam, postTwoValueToParam, postRoleRequestId, postUserIDToParam, getUserIdFromParam };

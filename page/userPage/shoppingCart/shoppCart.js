@@ -3,6 +3,7 @@ import {
   fetchCartFromUserLogedIn,
   updateCart$
 } from '../../../controllers/cartControllers.js'
+import { fetchNotificationList } from '../../../controllers/notificationControllers.js'
 import { fetchListOrder } from '../../../controllers/orderControllers.js'
 import {
   deleteProduct$,
@@ -21,40 +22,99 @@ import {
   hideLoading,
   showLoading
 } from '../../../feautureReuse/loadingScreen.js'
+import { connectNotification } from '../../../feautureReuse/sendNotification/sendNotification.js'
 import Cart from '../../../models/cartModels.js'
+import { postProductIdToParam } from '../../../routes/productRoutes.js'
+import { postRoleRequestId } from '../../../routes/userRoutes.js'
 
 const listProducts = await fetchProductAPI()
 const listOrder = await fetchListOrder()
-const listUser = await fetchUserAPI()
-// const socket = new WebSocket('ws://localhost:3000')
+const listUser = await fetchUserAPI();
+const notificationList = await fetchNotificationList();
 const getUserId = getValueSeasion('idUserLogedIn')
 let userLogedIn = await fetchCartFromUserLogedIn(getUserId)
-let totalPriceByUser = 0
+let totalPriceByUser = 0;
+const notificationListDOM = document.getElementById('notificationList');
+const toastMassageDOM = document.getElementById('toastMassage');
+toastMassageDOM.style.display = "none";
 
-// socket.onopen = () => {
-//   console.log('✅ Kết nối WebSocket thành công')
-// }
+roleCanAccessFeature(['CUSTOMER', 'USERADMIN', 'OWNER']);
+const dataTypeRequestRole = filterNotificationType("roleRequest");
 
-// socket.onmessage = event => {
-//   const notification = JSON.parse(event.data)
-//   console.log('🔔 Nhận thông báo:', notification)
-// }
-
-// socket.onclose = () => {
-//   console.log('❌ WebSocket bị đóng!')
-// }
-
-// socket.onerror = error => {
-//   console.log('⚠️ Lỗi WebSocket:', error)
-// }
-roleCanAccessFeature(['CUSTOMER', 'USERADMIN', 'OWNER'])
-displayAllInformation()
-
+displayAllInformation();
 async function displayAllInformation() {
   await updateRankingUser()
   await displayListProduct()
   checkRoleToDisplayButton()
+  connectNotification(handleNotification);
+  displayNofiticationListDOM(dataTypeRequestRole);
 }
+
+function handleNotification(notification) {
+  if (notification) {
+    displayNotificationDOM(notification);
+  }
+}
+
+function displayNofiticationListDOM(notification) {
+  notification.forEach((informations) => {
+    const nofiticationDOM = document.createElement("div");
+    nofiticationDOM.style.margin = "5px";
+
+    const checkDataType = notificationList.find((notification) => notification.type == informations.type);
+
+    nofiticationDOM.textContent = `User Id: ${informations.idUser}, Type: ${informations.type}, Data: ${JSON.stringify(informations.data)}, Time: ${informations.createdAt}`;
+
+    notificationListDOM.appendChild(nofiticationDOM);
+
+    nofiticationDOM.onclick = () => {
+      if (checkDataType.type == "roleRequest") {
+        window.location.href = `http://127.0.0.1:5500/page/adminPage/managerPage/roleAccessPage/roleAccessPage.html${postRoleRequestId(checkDataType.data.roleRequestId)}`;
+      }
+      if (checkDataType.type == "orderPayment") {
+        window.alert("updating....");
+      }
+      if (checkDataType.type == "productUpdate") {
+        window.location.href = `http://127.0.0.1:5500/page/adminPage/managerPage/producctManager/productManager.html${postProductIdToParam(checkDataType.data.productId)}`;
+      }
+    }
+  })
+}
+
+window.displayListNotification = function displayListNotification(event) {
+  const requestRoleFatherDOM = document.getElementById('requestRole');
+  const productUpdateFatherDOM = document.getElementById('productUpdate');
+  const orderPaymentFatherDOM = document.getElementById('orderPayment');
+  if (event.target == requestRoleFatherDOM) {
+    const dataTypeRequestRole = filterNotificationType("roleRequest");
+    reDisplayListNotification(dataTypeRequestRole);
+  }
+  if (event.target == productUpdateFatherDOM) {
+    const dataTypeProductUpdate = filterNotificationType("productUpdate");
+    reDisplayListNotification(dataTypeProductUpdate);
+  }
+  if (event.target == orderPaymentFatherDOM) {
+    const dataTypeOrderPayment = filterNotificationType("orderPayment");
+    reDisplayListNotification(dataTypeOrderPayment);
+  }
+}
+
+function reDisplayListNotification(dataTypeProductUpdate) {
+  notificationListDOM.innerHTML = "";
+  displayNofiticationListDOM(dataTypeProductUpdate);
+}
+
+function filterNotificationType(notificationType) {
+  return notificationList.filter((notification) => notification.type == notificationType);
+}
+
+function displayNotificationDOM(informations) {
+  const nofiticationDOM = document.createElement("div");
+  nofiticationDOM.style.margin = "5px";
+  nofiticationDOM.textContent = `User Id: ${informations.idUser}, Type: ${informations.type}, Data: ${JSON.stringify(informations.data)}, Time: ${informations.createdAt}`
+  notificationListDOM.appendChild(nofiticationDOM);
+}
+
 
 async function updateRankingUser() {
   try {
@@ -192,7 +252,7 @@ async function displayProductsDOM(products, amountProducts, productInforDOM) {
   const listProductDOM = document.getElementById('listProduct')
 
   const buttonContainer = document.getElementById('buttonContainer')
-  buttonContainer.style.display = 'inline-block'
+  buttonContainer.style.display = 'flex'
 
   const productDivDOM = document.createElement('div')
   productDivDOM.style.display = 'flex'
@@ -229,7 +289,10 @@ async function displayProductsDOM(products, amountProducts, productInforDOM) {
 function checkRoleToDisplayButton() {
   const roleUserLogedIn = userLogedIn.user.role
 
-  const accountsManagerButtonDOM = document.getElementById('accountsManager')
+  const accountAndPermissionsDOM = document.getElementById('accountAndPermissions');
+  accountAndPermissionsDOM.style.display = "inline-block";
+
+  const accountsManagerButtonDOM = document.getElementById('accountsManager');
   accountsManagerButtonDOM.style.display = 'none'
   accountsManagerButtonDOM.style.margin = '0px'
 
@@ -258,23 +321,8 @@ function checkRoleToDisplayButton() {
     productsManagerButtonDOM.style.display = 'none'
     roleAccessManagerDOM.style.display = 'none'
     voucherManagerDOM.style.display = 'none'
-
     return
   }
-}
-
-window.accountAndPermissons = function accountAndPermissons() {
-  window.location.href = `../accountAndPermissions/accountAndPermissions.html`
-}
-
-window.productsManager = function productsManager() {
-  window.location.href = `../../adminPage/managerPage/producctManager/productManager.html`
-}
-window.accountsManager = function accountsManager() {
-  window.location.href = `../../adminPage/managerPage/accountManager/accountManager.html`
-}
-window.voucherManager = function voucherManager() {
-  window.location.href = `../../adminPage/managerPage/voucherManager/voucherManager.html`
 }
 
 async function addToCart(productIdDOM, nameProductDOM, priceProductDOM, amountProductDOM, imageProductDOM) {
@@ -347,6 +395,28 @@ function getOrderHistoryByUserLogedIn() {
   return listOrder.filter(
     users => users.user.username == userLogedIn.user.username
   )
+}
+
+window.displayNotificationBoard = function displayNotificationBoard() {
+  if (toastMassageDOM.style.display == "none") {
+    toastMassageDOM.style.display = "block"
+  } else {
+    toastMassageDOM.style.display = "none"
+  }
+}
+
+window.accountAndPermissons = function accountAndPermissons() {
+  window.location.href = `../accountAndPermissions/accountAndPermissions.html`
+}
+
+window.productsManager = function productsManager() {
+  window.location.href = `../../adminPage/managerPage/producctManager/productManager.html`
+}
+window.accountsManager = function accountsManager() {
+  window.location.href = `../../adminPage/managerPage/accountManager/accountManager.html`
+}
+window.voucherManager = function voucherManager() {
+  window.location.href = `../../adminPage/managerPage/voucherManager/voucherManager.html`
 }
 
 window.orderHistory = function orderHistory() {

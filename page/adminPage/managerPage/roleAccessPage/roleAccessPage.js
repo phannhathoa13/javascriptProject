@@ -3,6 +3,7 @@ import { fetchListRequestRole$, removeRequest$ } from "../../../../controllers/r
 import { editRoleAccount$, fetchUserAPI } from "../../../../controllers/userController.js";
 import { getValueSeasion, roleCanAccessFeature } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
+import { getUserIdFromParam } from "../../../../routes/userRoutes.js";
 
 const listUser = await fetchUserAPI();
 const listCart = await fetchCartFromApi();
@@ -11,6 +12,11 @@ const getUserId = getValueSeasion('idUserLogedIn');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 
 const userInformation = userLogedIn.user;
+const roleRequestIdParam = getUserIdFromParam('roleRequestId');
+const listRequestRoleDOM = document.getElementById("listRequestRole");
+
+console.log(roleRequestIdParam);
+
 roleCanAccessFeature(["USERADMIN", "OWNER"]);
 
 displayListRequestRole();
@@ -32,13 +38,17 @@ function displayListRequestRole() {
     if (userInformation.role == "OWNER") {
       displayListRequestDOM(listAdminRequest);
     }
+    if (roleRequestIdParam) {
+      const requestId = filterRequestId();
+      listRequestRoleDOM.innerHTML = "";
+      displayListRequestDOM(requestId);
+    }
   }
 }
 
 function displayListRequestDOM(listRequestRole) {
   try {
     showLoading("loadingScreenDOM");
-    const listRequestRoleDOM = document.getElementById("listRequestRole");
     listRequestRoleDOM.style.margin = "20px";
 
     listRequestRole.forEach((request) => {
@@ -127,6 +137,10 @@ function listReuqestRoleByAdmin() {
 
 function listRequestsByOwner() {
   return listRequests.filter((roles) => roles.roleRequest == "OWNER");
+}
+
+function filterRequestId() {
+  return listRequests.filter((roles) => roles.id == roleRequestIdParam);
 }
 
 function getUserRequest(IdUserRequest) {

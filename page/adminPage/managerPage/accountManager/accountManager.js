@@ -10,6 +10,7 @@ const getUserId = getValueSeasion('idUserLogedIn');
 let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
 
 roleCanAccessFeature("OWNER");
+
 displayListUser();
 function displayListUser() {
     const listAccount$ = filterUserLogedIn();

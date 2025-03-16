@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../../../feautureReuse/loadingScreen.css" />
+    <link rel="stylesheet" href="../shoppingCart/shoppingCart.css" />
     <title>Shopping Cart</title>
   </head>
 
@@ -12,8 +13,11 @@
     <div id="loadingScreen" class="loading-overlay">
       <div class="spinner"></div>
     </div>
-    <button onclick="accountAndPermissons()">Account & Permissions</button>
-    <div id="buttonContainer">
+    <div class="buttonContainer" id="buttonContainer">
+      <button id="accountAndPermissions" onclick="accountAndPermissons()">
+        Account & Permissions
+      </button>
+
       <button id="productsManager" onclick="productsManager()">
         Products Manager
       </button>
@@ -26,6 +30,32 @@
       <button id="voucherManager" onclick="voucherManager()">
         Voucher Manager
       </button>
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/61/61073.png"
+        id="notificationDOM"
+        class="notificationLogo"
+        onclick="displayNotificationBoard()"
+      />
+    </div>
+    <div class="toastMassage" id="toastMassage">
+      <div class="notification-container" id="notificationContainer">
+        <div class="button-check">
+          <div onclick="displayListNotification(event)" id="requestRole">
+            Request Role
+          </div>
+        </div>
+        <div class="button-check">
+          <div onclick="displayListNotification(event)" id="productUpdate">
+            Product Update
+          </div>
+        </div>
+        <div class="button-check">
+          <div onclick="displayListNotification(event)" id="orderPayment">
+            Order Payment
+          </div>
+        </div>
+      </div>
+      <div id="notificationList"></div>
     </div>
     <div id="listProduct"></div>
     <button onclick="logOut()">Log Out</button>

@@ -1,4 +1,5 @@
 import { fetchCartFromUserLogedIn } from "../../../../controllers/cartControllers.js";
+import { createNotification$ } from "../../../../controllers/notificationControllers.js";
 import {
     deleteProduct$,
     fetchProductAPI,
@@ -6,8 +7,11 @@ import {
 } from "../../../../controllers/productControllers.js";
 import { getValueSeasion, removeInforUserLogedIn, roleCanAccessFeature } from "../../../../feautureReuse/checkRoleUser/checkRoleUser.js";
 import { hideLoading, showLoading } from "../../../../feautureReuse/loadingScreen.js";
+import { postNotification } from "../../../../feautureReuse/sendNotification/sendNotification.js";
+import { notification } from "../../../../models/notificationList.js";
 import Product from "../../../../models/product.js";
 import { postCartIDAndProductIDToParam } from "../../../../routes/productRoutes.js";
+import { getUserIdFromParam } from "../../../../routes/userRoutes.js";
 import { isValidImageUrl } from "../../../../validation/imageValidation.js";
 
 const listProduct = await fetchProductAPI();
@@ -23,15 +27,27 @@ fileFather.style.display = "none";
 
 const previewImgDOM = document.getElementById('previewImg');
 
+const productIdParam = getUserIdFromParam('productID');
+
 
 let lastImgPreviewDOM = "";
 roleCanAccessFeature(["USERADMIN", "OWNER"]);
 
-displayProduct();
+displayListProductsDOM();
+
+function displayListProductsDOM() {
+    if (productIdParam) {
+        const productFiltered = filterProduct();
+        displayProduct(productFiltered);
+    }
+    else {
+        displayProduct(listProduct);
+    }
+}
 
 
-function displayProduct() {
-    listProduct.forEach((products) => {
+function displayProduct(listProductsValue) {
+    listProductsValue.forEach((products) => {
         try {
             showLoading("loadingScreenDOM");
             const productDivDOM = document.createElement("div");
@@ -91,8 +107,11 @@ document.getElementById("createProduct").addEventListener("submit", async functi
         else {
             if (file == undefined) {
                 const product = createProductObject(previewImgString);
+
                 if (validateValueInput(product)) {
                     await createProduct(product);
+                    await getOrderAndPostNotification();
+
                     hideLoading("loadingScreenDOM");
                     setTimeout(() => {
                         window.alert("Created product");
@@ -115,6 +134,7 @@ document.getElementById("createProduct").addEventListener("submit", async functi
                     }
                     if (validateValueInput(product)) {
                         await createProduct(product);
+                        await getOrderAndPostNotification();
                         hideLoading("loadingScreenDOM");
                         setTimeout(() => {
                             window.alert("Created Product");
@@ -161,6 +181,15 @@ window.viewImage = function viewImage(event) {
     };
 };
 
+
+async function getOrderAndPostNotification() {
+    const listProductNew = await fetchProductAPI();
+    const getProductId = listProductNew[listProductNew.length - 1].id;
+    const informationObject = createObjectInformation(getProductId)
+    postNotification(informationObject);
+    await createNotification$(informationObject)
+}
+
 function createProductObject(base64String) {
     const formData = new FormData(document.getElementById("createProduct"));
     const product = new Product(
@@ -170,6 +199,17 @@ function createProductObject(base64String) {
         base64String
     );
     return product
+}
+
+function createObjectInformation(productId) {
+    const createdAt = new Date();
+    const notificationObject = new notification(
+        userLogedIn.user.idUser,
+        "productUpdate",
+        { productId },
+        createdAt
+    )
+    return notificationObject
 }
 
 function validateValueInput(product) {
@@ -238,6 +278,11 @@ function validateImageSize(file) {
 function getProductExisted(productNameDOM) {
     return listProduct.find((products) => products.productName == productNameDOM);
 }
+
+function filterProduct() {
+    return listProduct.filter((products) => products.id == productIdParam);
+}
+
 window.logOut = function logOut() {
     removeInforUserLogedIn();
     window.location.href = "../../../userPage/loginPage/loginPage.html";

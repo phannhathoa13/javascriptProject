@@ -1,0 +1,44 @@
+body {
+    background-color: #fdfdfd;
+}
+
+.notificationLogo {
+    width: 30px;
+    height: 25px;
+}
+
+.buttonContainer {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    gap: 30px;
+}
+
+.toastMassage {
+    width: 700px;
+    height: 300px;
+    background-color: #f7f7f7;
+    position: fixed;
+    left: 30%;
+    top: 62px;
+    z-index: 0;
+
+}
+
+.notification-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    font-size: 20px;
+    height: 70px;
+    border-bottom: 1px solid grey;
+}
+
+.button-check {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 30%;
+    border-right: 1px solid black;
+    cursor: pointer;
+}

@@ -3,7 +3,8 @@ import {
   updateCart$,
   updateCartInAccount,
 } from "../../../controllers/cartControllers.js";
-import { createOrder } from "../../../controllers/orderControllers.js";
+import { createNotification$ } from "../../../controllers/notificationControllers.js";
+import { createOrder, fetchListOrder } from "../../../controllers/orderControllers.js";
 import {
   fetchProductAPI,
   updateProduct,
@@ -17,6 +18,8 @@ import {
   hideLoading,
   showLoading,
 } from "../../../feautureReuse/loadingScreen.js";
+import { memberRank, postNotification } from "../../../feautureReuse/sendNotification/sendNotification.js";
+import { notification } from "../../../models/notificationList.js";
 import Order from "../../../models/order.js";
 import { postProductIdToParam } from "../../../routes/productRoutes.js";
 
@@ -38,6 +41,7 @@ let voucherDiscountList = [];
 
 const discountedPriceDOM = document.getElementById("discountedPrice");
 
+const totalPriceDOM = document.getElementById("totalPrice");
 
 const rankMember = getRanking("Member");
 const rankVIP = getRanking("VIP");
@@ -50,7 +54,6 @@ displayListVoucherDOM();
 async function showListProductInCartUser() {
   try {
     showLoading("loadingScreen");
-    const totalPriceDOM = document.getElementById("totalPrice");
 
     const listProductDOM = document.getElementById("listProductInCart");
 
@@ -179,27 +182,37 @@ function displayListVoucher(listVoucherDOM) {
 }
 
 function validateCheckBoxRanking(voucherFatherContainer, vouchersDOM, checkBoxDOM) {
-
+  const userRank = userLogedIn.user.ranking;
+  const ranking = memberRank; // import memberRank
+  const rankUser = ranking.find((ranking) => ranking.rank === userRank)
   checkBoxDOM.addEventListener("change", function () {
-    if (checkBoxDOM.checked) {
+
+    if (checkBoxDOM.checked) { // click khi voucher da check
       voucherFatherContainer.style.border = "1px solid black";
       voucherFatherContainer.style.backgroundColor = "#b3e0ff";
-      if (userLogedIn.user.ranking == rankVVIP) {
-        if (voucherDiscountList.length > 1) {
-          checkBoxDOM.checked = false;
-          window.alert("You can choose only 1 voucher");
-        }
-        else {
-          voucherDiscountList.push(vouchersDOM)
-        }
-      }
-    } else {
+      checkVoucherLimit(checkBoxDOM, rankUser.numberVoucherApply, vouchersDOM);
+
+    } else { // khi voucher khong co check
       voucherDiscountList = voucherDiscountList.filter((vouchers) => vouchers != vouchersDOM)
       voucherFatherContainer.style.border = "none";
       voucherFatherContainer.style.backgroundColor = "#f9f9f9";
     }
-  });
 
+  });
+}
+
+function checkVoucherLimit(checkBoxDOM, voucher, vouchersDOM) {
+  if (voucherDiscountList.length == voucher) {
+    disableVoucher(checkBoxDOM);
+    window.alert(`You can choose only ${voucher} voucher`);
+  }
+  else {
+    voucherDiscountList.push(vouchersDOM)
+  }
+}
+
+function disableVoucher(checkBoxDOM) {
+  checkBoxDOM.checked = false;
 }
 
 function displayHoursAndMinutes(timeLeftDOM, vouchers) {
@@ -247,12 +260,42 @@ window.applyVoucher = function applyVoucher() {
     showLoading("loadingScreen");
     const voucherNameDOM = document.getElementById("voucherNameDOM").textContent;
     let percentDiscount = 0;
+
+    let lastTotalPrice = totalPrice - discountedPrice;
+
+    const lastTotalPriceDOM = document.createElement("span");
+    lastTotalPriceDOM.style.textDecoration = "line-through"
+    lastTotalPriceDOM.textContent = `${lastTotalPrice}$`;
+
     voucherDiscountList.forEach((vouchers) => {
       percentDiscount += vouchers.discount / 100;
     })
-    userLogedIn.totalPrice -= userLogedIn.totalPrice * percentDiscount;
-    discountedPriceDOM.innerHTML = `Total Price: ${userLogedIn.totalPrice}$`;
-    console.log(userLogedIn.totalPrice);
+
+    const discountPrice = lastTotalPrice * percentDiscount;
+    const newTotalPrice = lastTotalPrice - discountPrice;
+
+    if (userLogedIn.user.ranking == rankMember) {
+      totalPriceDOM.style.display = "none";
+      discountedPriceDOM.style.display = "flex";
+    }
+
+    if (voucherDiscountList.length == 0) {
+      discountedPriceDOM.innerHTML = `Total Price: ${lastTotalPrice}$`;
+      userLogedIn.totalPrice = lastTotalPrice;
+    }
+    else {
+      const newTotalPriceDOM = document.createElement("span");
+      newTotalPriceDOM.textContent = `${newTotalPrice}$`;
+      newTotalPriceDOM.style.marginLeft = "5px"
+
+      discountedPriceDOM.innerHTML = `New Total Price:`;
+      discountedPriceDOM.appendChild(lastTotalPriceDOM);
+      discountedPriceDOM.appendChild(newTotalPriceDOM);
+      userLogedIn.totalPrice = newTotalPrice;
+
+      window.alert("Voucher applied successfully");
+      listVoucherContainerDOM.style.display = "none";
+    }
   }
   catch (error) {
     console.log("apply voucher get error", error);
@@ -330,7 +373,7 @@ async function removeProduct(productNameDOM) {
 }
 
 window.chooseVoucher = function chooseVoucher() {
-  listVoucherContainerDOM.style.display = "flex";
+  listVoucherContainerDOM.style.display = "block";
   listVoucherContainerDOM.onclick = () => {
     listVoucherContainerDOM.style.display = "none";
   };
@@ -355,9 +398,10 @@ window.payment = async function payment() {
     }
     await createOrder(orderHistory);
     await updateCartInAccount(userLogedIn.cartID, userLogedIn, [], 0);
-    console.log(userLogedIn);
-    hideLoading("loadingScreen");
 
+    await getOrderAndPostNotification()
+
+    hideLoading("loadingScreen");
     setTimeout(() => {
       window.alert("Payment successed");
       window.location.href = `../shoppingCart/shoppCart.html`;
@@ -371,6 +415,14 @@ function getProductInStock(productInCart) {
   return listProduct.find((products) => products.productName == productInCart);
 }
 
+async function getOrderAndPostNotification() {
+  const listOrder = await fetchListOrder();
+  const getLastestOrderId = listOrder[listOrder.length - 1].orderID;
+  const informationObject = createObjectInformation(getLastestOrderId)
+  postNotification(informationObject);
+  await createNotification$(informationObject)
+}
+
 function createOrderAfterPayment() {
   const createAt = new Date().toDateString();
   const orderHistory = new Order(
@@ -382,6 +434,18 @@ function createOrderAfterPayment() {
   );
   return orderHistory;
 }
+
+function createObjectInformation(orderID) {
+  const createdAt = new Date();
+  const notificationObject = new notification(
+    userLogedIn.user.idUser,
+    "orderPayment",
+    { orderID },
+    createdAt
+  )
+  return notificationObject
+}
+
 function getRanking(userLogedInRanking) {
   return listRanking.find((ranking) => ranking == userLogedInRanking);
 }
@@ -395,10 +459,6 @@ function editProductInCart(productID) {
     productID
   )}`;
   console.log(productName);
-}
-
-function getVoucher(voucherNameDOM) {
-  return listVoucher.find((vouchers) => vouchers.voucherName == voucherNameDOM);
 }
 
 function filterVoucherVaild() {

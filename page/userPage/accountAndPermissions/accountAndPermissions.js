@@ -2,6 +2,7 @@ import {
   fetchCartFromUserLogedIn,
   updateCart$,
 } from "../../../controllers/cartControllers.js";
+import { createNotification$ } from "../../../controllers/notificationControllers.js";
 import {
   fetchListRequestRole$,
   requestRole$,
@@ -15,6 +16,8 @@ import {
   hideLoading,
   showLoading,
 } from "../../../feautureReuse/loadingScreen.js";
+import { postNotification } from "../../../feautureReuse/sendNotification/sendNotification.js";
+import { notification } from "../../../models/notificationList.js";
 import User from "../../../models/user.js";
 import {
   validationEmail,
@@ -22,7 +25,7 @@ import {
 } from "../../../validation/loginValidation.js";
 
 const listUser = await fetchUserAPI();
-const listRoleReuquested = await fetchListRequestRole$();
+let listRoleReuquested = await fetchListRequestRole$();
 
 const getUserId = getValueSeasion('idUserLogedIn');
 
@@ -36,32 +39,8 @@ const passwordInputDOM = document.getElementById("passwordInput");
 const confirmPasswordInputDOM = document.getElementById("confirmPasswordInput");
 const emailInputDOM = document.getElementById("emailInput");
 const requestRoleButtonDOM = document.getElementById("requestRole");
-// const socket = new WebSocket("ws://localhost:3000");
 
 const listRoles = ["CUSTOMER", "USERADMIN", "OWNER"];
-
-// socket.onopen = () => {
-//   console.log("✅ Kết nối WebSocket thành công");
-// };
-
-// socket.onmessage = (event) => {
-//   console.log(event);
-
-//   const notification = JSON.parse(event.data);
-//   console.log("🔔 Nhận thông báo:", notification);
-// };
-
-// socket.onclose = () => {
-//   console.log("❌ WebSocket bị đóng!");
-// };
-
-// window.sendNotification = function sendNotification() {
-//   const test = {
-//     type: "cussess",
-//     message: "test",
-//   };
-//   socket.send(JSON.stringify(test));
-// };
 
 let isPasswordValid = false;
 let isConfirmPasswordValid = false;
@@ -122,12 +101,16 @@ function displayAccount() {
 
 window.requestRole = async function requestRole() {
   showLoading("loadingScreenDOM");
+  listRoleReuquested = null;
+
   const roleCustomer = getRole("CUSTOMER");
   const roleAdmin = getRole("USERADMIN");
   const roleOwner = getRole("OWNER");
 
   if (userLogedInInformation.role == roleCustomer) {
     await requestRole$(userLogedInInformation, roleAdmin);
+    await getOrderAndPostNotification()
+
     hideLoading("loadingScreenDOM");
     setTimeout(() => {
       window.alert("Request for permission has been sent");
@@ -136,6 +119,8 @@ window.requestRole = async function requestRole() {
   }
   if (userLogedInInformation.role == roleAdmin) {
     await requestRole$(userLogedInInformation, roleOwner);
+    await getOrderAndPostNotification()
+
     hideLoading("loadingScreenDOM");
     setTimeout(() => {
       window.alert("Request for permission has been sent");
@@ -148,6 +133,25 @@ window.requestRole = async function requestRole() {
     return;
   }
 };
+
+async function getOrderAndPostNotification() {
+  const listRoleRequest = await fetchListRequestRole$();
+  const roleRequestId = listRoleRequest[listRoleRequest.length - 1].id;
+  const informationObject = createObjectInformation(roleRequestId)
+  postNotification(informationObject);
+  await createNotification$(informationObject)
+}
+
+function createObjectInformation(roleRequestId) {
+  const createdAt = new Date();
+  const notificationObject = new notification(
+    userLogedInInformation.idUser,
+    "roleRequest",
+    { roleRequestId },
+    createdAt
+  )
+  return notificationObject
+}
 
 function getRole(roleName) {
   return listRoles.find((roles) => roles == roleName);
