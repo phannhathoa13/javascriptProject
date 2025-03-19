@@ -414,7 +414,7 @@ window.payment = async function payment() {
 function getProductInStock(productInCart) {
   return listProduct.find((products) => products.productName == productInCart);
 }
-
+  
 async function getOrderAndPostNotification() {
   const listOrder = await fetchListOrder();
   const getLastestOrderId = listOrder[listOrder.length - 1].orderID;

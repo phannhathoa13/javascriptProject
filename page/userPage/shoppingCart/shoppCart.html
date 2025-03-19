@@ -58,6 +58,28 @@
       <div id="notificationList"></div>
     </div>
     <div id="listProduct"></div>
+    <div class="chat-online-container" id="chatOnlineContainer">
+      <div class="user-recive-container">
+        <input
+          type="text"
+          class="user-recive-input"
+          id="userReciveText"
+          placeholder="To: User Recive"
+        />
+      </div>
+      <div class="text-history-container" id="textHistory">
+        <div id="timeMassage"></div>
+        <div id="massageList"></div>
+      </div>
+      <form class="chat-input-container">
+        <textarea
+          class="chat-input"
+          id="massageInput"
+          placeholder="Enter Content"
+        ></textarea>
+        <input type="submit" id="sendMessage" value="Send" />
+      </form>
+    </div>
     <button onclick="logOut()">Log Out</button>
     <button onclick="orderHistory()">Check Order History</button>
     <button onclick="viewCart()">View Cart</button>

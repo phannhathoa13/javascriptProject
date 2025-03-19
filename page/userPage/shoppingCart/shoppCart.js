@@ -3,6 +3,7 @@ import {
   fetchCartFromUserLogedIn,
   updateCart$
 } from '../../../controllers/cartControllers.js'
+import { fetctMassageHistory, sendMassage$ } from '../../../controllers/massageHistoryControllers.js'
 import { fetchNotificationList } from '../../../controllers/notificationControllers.js'
 import { fetchListOrder } from '../../../controllers/orderControllers.js'
 import {
@@ -22,7 +23,7 @@ import {
   hideLoading,
   showLoading
 } from '../../../feautureReuse/loadingScreen.js'
-import { connectNotification } from '../../../feautureReuse/sendNotification/sendNotification.js'
+import { connectNotification, postNotification } from '../../../feautureReuse/sendNotification/sendNotification.js'
 import Cart from '../../../models/cartModels.js'
 import { postProductIdToParam } from '../../../routes/productRoutes.js'
 import { postRoleRequestId } from '../../../routes/userRoutes.js'
@@ -31,12 +32,23 @@ const listProducts = await fetchProductAPI()
 const listOrder = await fetchListOrder()
 const listUser = await fetchUserAPI();
 const notificationList = await fetchNotificationList();
-const getUserId = getValueSeasion('idUserLogedIn')
-let userLogedIn = await fetchCartFromUserLogedIn(getUserId)
+const getUserId = getValueSeasion('idUserLogedIn');
+let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
+
+const massageHistoryList = await fetctMassageHistory();
+
 let totalPriceByUser = 0;
 const notificationListDOM = document.getElementById('notificationList');
 const toastMassageDOM = document.getElementById('toastMassage');
 toastMassageDOM.style.display = "none";
+
+const massageListFatherDOM = document.getElementById('massageList');
+const timeMassageDOM = document.getElementById('timeMassage');
+
+const textHistoryFatherDOM = document.getElementById('textHistory');
+
+const sendMessageButton = document.getElementById('sendMessage');
+sendMessageButton.style.backgroundColor = "rgb(42, 114, 163)"
 
 roleCanAccessFeature(['CUSTOMER', 'USERADMIN', 'OWNER']);
 const dataTypeRequestRole = filterNotificationType("roleRequest");
@@ -48,12 +60,222 @@ async function displayAllInformation() {
   checkRoleToDisplayButton()
   connectNotification(handleNotification);
   displayNofiticationListDOM(dataTypeRequestRole);
+  chatOnlineFeauture();
+  connectNotification(handleMassageNotification);
+  checkMassageUser()
 }
 
 function handleNotification(notification) {
   if (notification) {
     displayNotificationDOM(notification);
   }
+}
+
+function handleMassageNotification(notification) {
+  if (notification) {
+    displayChatOnlineNotification(notification);
+  }
+}
+
+function checkMassageUser() {
+  const userReciveTextDOM = document.getElementById('userReciveText');
+  const userSendMassage = getMessageUserSend();
+  const userReciveMassage = getMassageUserRecive();
+  if (!isUserLogedInGotMassage()) {
+    textHistoryFatherDOM.innerHTML = "";
+  }
+  else {
+    if (userSendMassage) {
+      userReciveTextDOM.value = userSendMassage.userReciveMassage;
+      displayMassageDOM();
+    }
+    if (userReciveMassage) {
+      userReciveTextDOM.value = userSendMassage.userReciveMassage;
+      displayMassageDOM();
+    }
+  }
+}
+
+function displayChatOnlineNotification(notification) {
+
+  const massageContainerDOM = document.createElement("div");
+  massageContainerDOM.style.wordBreak = "break-word";
+  massageContainerDOM.style.display = "flex";
+  massageContainerDOM.style.margin = "15px";
+
+  const massageDOM = document.createElement("div");
+  massageDOM.textContent = notification.massage;
+  massageDOM.style.color = "white";
+  massageDOM.style.padding = "10px";
+
+  const date = new Date(notification.messageAt);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  const timeMassageDOM = document.createElement("span");
+  timeMassageDOM.textContent = `${hours}h${minutes}m`
+  timeMassageDOM.style.fontSize = "12px";
+  timeMassageDOM.style.marginLeft = "5px";
+  timeMassageDOM.style.color = "#888";
+  timeMassageDOM.style.fontStyle = "italic";
+
+  massageListFatherDOM.appendChild(massageContainerDOM);
+  massageContainerDOM.appendChild(massageDOM);
+  massageDOM.appendChild(timeMassageDOM);
+
+  changeStyleMassage(massageContainerDOM, notification);
+
+  scrollToBottom();
+}
+function scrollToBottom() {
+  textHistoryFatherDOM.scrollTop = textHistoryFatherDOM.scrollHeight;
+}
+
+function chatOnlineFeauture() {
+  const userReciveTextDOM = document.getElementById('userReciveText');
+  const massageInputDOM = document.getElementById('massageInput');
+
+  userReciveText(userReciveTextDOM);
+
+  massageInput(sendMessageButton, userReciveTextDOM, massageInputDOM);
+
+}
+function userReciveText(userReciveTextDOM) {
+  userReciveTextDOM.addEventListener('keydown', function (event) {
+    if (event.key == "Enter") {
+      validateUserReciveTexT(userReciveTextDOM);
+    }
+
+  })
+}
+
+function massageInput(sendMessageButton, userReciveTextDOM, massageInputDOM) {
+  sendMessageButton.addEventListener('click', async function (event) {
+    event.preventDefault();
+    if (!validateUserReciveTexT(userReciveTextDOM)) {
+      return;
+    }
+    else if (!massageInputDOM.value) {
+      return
+    }
+    else {
+      await createObjectMassage(massageInputDOM, userReciveTextDOM);
+      massageInputDOM.value = "";
+    }
+
+  })
+  massageInputDOM.addEventListener('keydown', async function (event) {
+    if (event.key == "Enter") {
+      if (!validateUserReciveTexT(userReciveTextDOM)) {
+        return;
+      }
+      else if (!massageInputDOM.value) {
+        return
+      }
+      else {
+        await createObjectMassage(massageInputDOM, userReciveTextDOM);
+        massageInputDOM.value = "";
+      }
+    }
+  })
+}
+
+function displayMassageDOM() {
+  const filterDateSimilar = filterDateSimilarMessages();
+  filterDateSimilar.forEach((dates) => {
+
+    const massageTimeDOM = document.createElement("div");
+    massageTimeDOM.style.color = "white";
+    massageTimeDOM.textContent = dates
+    massageTimeDOM.style.display = "flex";
+    massageTimeDOM.style.justifyContent = "center";
+    timeMassageDOM.appendChild(massageTimeDOM);
+
+    massageHistoryList.forEach((massages) => {
+
+      const massageContainerDOM = document.createElement("div");
+      massageContainerDOM.style.wordBreak = "break-word";
+      massageContainerDOM.style.display = "flex";
+      massageContainerDOM.style.margin = "15px";
+
+      const massageDOM = document.createElement("div");
+      massageDOM.textContent = massages.massage;
+      massageDOM.style.color = "white";
+      massageDOM.style.padding = "10px";
+
+      const date = new Date(massages.messageAt);
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+
+      const timeMassageDOM = document.createElement("span");
+      timeMassageDOM.textContent = `${hours}h${minutes}m`
+      timeMassageDOM.style.fontSize = "12px";
+      timeMassageDOM.style.marginLeft = "5px";
+      timeMassageDOM.style.color = "#888";
+      timeMassageDOM.style.fontStyle = "italic";
+
+      massageListFatherDOM.appendChild(massageContainerDOM);
+      massageContainerDOM.appendChild(massageDOM);
+      massageDOM.appendChild(timeMassageDOM);
+
+      changeStyleMassage(massageContainerDOM, massages);
+    })
+  });
+}
+
+function filterDateSimilarMessages() {
+  const updateToLatestTime = massageHistoryList.sort((a, b) => new Date(b.messageAt) - new Date(a.messageAt));
+  const filterDateSimilar = [...new Set(updateToLatestTime.map((massageTime) => {
+    const date = new Date(massageTime.messageAt);
+    return date.toLocaleDateString();
+  }))];
+  return filterDateSimilar
+}
+
+function changeStyleMassage(massageContainerDOM, notification) {
+  if (userLogedIn.user.username == notification.userSendMassage) {
+    massageContainerDOM.style.backgroundColor = "rgb(42 114 163)";
+    massageContainerDOM.style.justifyContent = "end";
+    massageContainerDOM.style.border = "1px solid rgb(42 114 163)";
+    massageContainerDOM.style.borderRadius = "20px";
+  }
+  else {
+    massageContainerDOM.style.justifyContent = "start";
+    massageContainerDOM.style.backgroundColor = "#696666";
+    massageContainerDOM.style.borderRadius = "20px";
+  }
+}
+
+
+function validateUserReciveTexT(userReciveTextDOM) {
+  if (!userReciveTextDOM.value) {
+    window.alert("Please input user recive your massage");
+    userReciveTextDOM.style.color = "red";
+    userReciveTextDOM.style.border = "1px soild red";
+    return false;
+  }
+  else if (!isUserExisted(userReciveTextDOM.value)) {
+    window.alert("This user is not existed");
+    userReciveTextDOM.style.color = "red";
+    userReciveTextDOM.style.border = "1px soild red";
+    return false;
+  }
+  else {
+    userReciveTextDOM.style.color = "#white";
+    return true;
+  }
+}
+
+async function createObjectMassage(massageInput, userRecive) {
+  const createAt = new Date().toLocaleString();
+  const massageText = {
+    userSendMassage: userLogedIn.user.username,
+    massage: massageInput.value,
+    userReciveMassage: userRecive.value,
+    messageAt: createAt
+  }
+  postNotification(massageText);
+  await sendMassage$(massageText);
 }
 
 function displayNofiticationListDOM(notification) {
@@ -405,6 +627,18 @@ window.displayNotificationBoard = function displayNotificationBoard() {
   }
 }
 
+function isUserLogedInGotMassage() {
+  return massageHistoryList.some((massages) => massages.userSendMassage == userLogedIn.user.username || massages.userReciveMassage == userLogedIn.user.username)
+}
+
+function getMessageUserSend() {
+  return massageHistoryList.find((massages) => massages.userSendMassage == userLogedIn.user.username)
+}
+function getMassageUserRecive() {
+  return massageHistoryList.find((massages) => massages.userReciveMassage == userLogedIn.user.username)
+
+}
+
 window.accountAndPermissons = function accountAndPermissons() {
   window.location.href = `../accountAndPermissions/accountAndPermissions.html`
 }
@@ -437,4 +671,8 @@ window.roleAccessManager = function roleAccessManager() {
 
 function getUser() {
   return listUser.find(users => users.username == userLogedIn.user.username)
+}
+
+function isUserExisted(userRecive) {
+  return listUser.some((users) => users.username == userRecive);
 }
