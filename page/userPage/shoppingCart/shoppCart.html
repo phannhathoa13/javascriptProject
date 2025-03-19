@@ -66,6 +66,7 @@
           id="userReciveText"
           placeholder="To: User Recive"
         />
+        <div id="closeChatBox">X</div>
       </div>
       <div class="text-history-container" id="textHistory">
         <div id="timeMassage"></div>
@@ -74,12 +75,13 @@
       <form class="chat-input-container">
         <textarea
           class="chat-input"
-          id="massageInput"
+          id="messageInput"
           placeholder="Enter Content"
         ></textarea>
         <input type="submit" id="sendMessage" value="Send" />
       </form>
     </div>
+    <div class="massage-box" id="massageBox">Chat Box</div>
     <button onclick="logOut()">Log Out</button>
     <button onclick="orderHistory()">Check Order History</button>
     <button onclick="viewCart()">View Cart</button>

@@ -1,6 +1,6 @@
 const massageHistoryApi = ("https://67701d46b353db80c3246245.mockapi.io/api/massageHistory");
 
-async function fetctMassageHistory() {
+async function fetchMessageHistory() {
     try {
         const reponse = await fetch(massageHistoryApi);
         return await reponse.json()
@@ -28,4 +28,4 @@ async function sendMassage$(massageText) {
     }
 }
 
-export { fetctMassageHistory, sendMassage$ }
+export { fetchMessageHistory, sendMassage$ }
