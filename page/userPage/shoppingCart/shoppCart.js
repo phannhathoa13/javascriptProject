@@ -106,25 +106,18 @@ function handleNotification(notification) {
 }
 
 function handleMassageNotification(message) {
+  //   userSendMassage
+  // userReciveMassage
   const userLoggin = userLogedIn.user.username;
-  if ((message.userSendMassage == userLoggin) ||
-    (message.userReciveMassage == userLoggin) &&
-    (message.userReciveMassage != userLoggin)) {
-    userReciveTextDOM.value = message.userReciveMassage;
-    displayChatOnlineNotification(message);
+  const userRecive = userReciveTextDOM.value;
 
-    console.log("case 1 ");
-
-  } else if ((message.userSendMassage != userLoggin) && (message.userReciveMassage == userLoggin)) {
-    userReciveTextDOM.value = message.userSendMassage;
-    const newFetchMessage = getAllMessageUserandSender(userReciveTextDOM.value);
-    massageListFatherDOM.innerHTML = "";
-    timeMassageDOM.innerHTML = "";
-    displayMassageDOM(newFetchMessage);
-    displayChatOnlineNotification(message);
-
-    console.log("case 2 ");
+  if (message.userSendMassage == userLoggin && message.userSendMassage != userRecive) {
+    console.log("case 1");
+  } else if (message.userReciveMassage == userLoggin && message.userSendMassage == userRecive) {
+    console.log("case 2");
   }
+
+
 }
 
 
