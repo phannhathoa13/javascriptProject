@@ -1,14 +1,14 @@
 
 const socket = connectWebSocket();
-function connectNotification(notificationProcessing) {
+async function connectNotification(notificationProcessing) {
     socket.onopen = () => {
         console.log("✅ Kết nối WebSocket thành công");
     };
 
-    socket.onmessage = (event) => {
+    socket.onmessage = async (event) => {
         const notification = JSON.parse(event.data);
         console.log("🔔 Nhận thông báo:", notification);
-        notificationProcessing(notification);
+        await notificationProcessing(notification);
     };
 
     socket.onclose = () => {

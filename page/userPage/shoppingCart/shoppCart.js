@@ -64,7 +64,7 @@ toastMassageDOM.style.display = "none";
 const listProducts = await fetchProductAPI();
 const listOrder = await fetchListOrder();
 const listUser = await fetchUserAPI();
-const messageHistoryList = await fetchMessageHistory();
+let messageHistoryList = await fetchMessageHistory();
 const notificationList = await fetchNotificationList();
 const getUserId = getValueSeasion("idUserLogedIn");
 let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
@@ -94,7 +94,7 @@ async function onInit() {
   checkRoleToDisplayButton();
   connectNotification(handleNotification);
   displayNofiticationListDOM(dataTypeRequestRole);
-  connectNotification(handleMassageNotification);
+  await connectNotification(handleMassageNotification);
   // chat feature
   chatOnlineFeauture();
 }
@@ -105,25 +105,28 @@ function handleNotification(notification) {
   }
 }
 
-function handleMassageNotification(message) {
+async function handleMassageNotification(message) {
+  const userRecive = userReciveTextDOM.value;
   const userLoggin = userLogedIn.user.username;
-  if ((message.userSendMassage == userLoggin) ||
-    (message.userReciveMassage == userLoggin) &&
-    (message.userReciveMassage != userLoggin)) {
-    userReciveTextDOM.value = message.userReciveMassage;
-    displayChatOnlineNotification(message);
+  console.log(message.userReciveMassage);
+  console.log(message.userSendMassage);
+  if (userLoggin == message.userReciveMassage && userRecive == message.userSendMassage) {
+    displayChatOnlineNotification(message)
+  } else if (userRecive == message.userReciveMassage && userLoggin == message.userSendMassage) {
+    displayChatOnlineNotification(message)
+  } else if (userLoggin == message.userReciveMassage && userRecive != message.userSendMassage) {
 
-    console.log("case 1 ");
-
-  } else if ((message.userSendMassage != userLoggin) && (message.userReciveMassage == userLoggin)) {
     userReciveTextDOM.value = message.userSendMassage;
-    const newFetchMessage = getAllMessageUserandSender(userReciveTextDOM.value);
-    massageListFatherDOM.innerHTML = "";
     timeMassageDOM.innerHTML = "";
-    displayMassageDOM(newFetchMessage);
-    displayChatOnlineNotification(message);
+    massageListFatherDOM.innerHTML = "";
+    messageHistoryList = await fetchMessageHistory();
 
-    console.log("case 2 ");
+    setTimeout(() => {
+
+      displayMassageDOM(getAllMessageUserandSender(userReciveTextDOM.value));
+
+    }, 300);
+
   }
 }
 
@@ -226,12 +229,12 @@ function onMessageClick() {
 }
 
 function checkUserRecive() {
-  userReciveTextDOM.addEventListener("keydown", function (event) {
+  userReciveTextDOM.addEventListener("keydown", async function (event) {
     const userRecive = userReciveTextDOM.value;
     if (event.key == "Enter") {
       validateUserReciveText();
       if (isUserReciveVaild) {
-        allMessageSenderAndRecive = getAllMessageUserandSender(userRecive);
+        allMessageSenderAndRecive = await getAllMessageUserandSender(userRecive);
       } else {
         allMessageSenderAndRecive = [];
       }
@@ -245,7 +248,6 @@ function checkUserRecive() {
 
 function getAllMessageUserandSender(userReciveInput) {
   const userLoggin = userLogedIn.user.username;
-
   return messageHistoryList.filter(
     (message) =>
       (message.userReciveMassage === userReciveInput &&
@@ -367,8 +369,9 @@ async function createMassage() {
     userReciveMassage: userReciveTextDOM.value,
     messageAt: createAt,
   };
-  postNotification(massageText);
   await sendMassage$(massageText);
+  postNotification(massageText);
+
 }
 
 function displayNofiticationListDOM(notification) {
