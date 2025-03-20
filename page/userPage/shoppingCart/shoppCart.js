@@ -36,7 +36,8 @@ import { postRoleRequestId } from "../../../routes/userRoutes.js";
 
 let isUserReciveVaild = false;
 let totalPriceByUser = 0;
-var allMessageSenderAndRecive = [];
+let isMassageSending = false;
+let isMessageProcessing = false;
 
 const notificationListDOM = document.getElementById("notificationList");
 const toastMassageDOM = document.getElementById("toastMassage");
@@ -64,7 +65,7 @@ toastMassageDOM.style.display = "none";
 const listProducts = await fetchProductAPI();
 const listOrder = await fetchListOrder();
 const listUser = await fetchUserAPI();
-const messageHistoryList = await fetchMessageHistory();
+let messageHistoryList = await fetchMessageHistory();
 const notificationList = await fetchNotificationList();
 const getUserId = getValueSeasion("idUserLogedIn");
 let userLogedIn = await fetchCartFromUserLogedIn(getUserId);
@@ -105,21 +106,44 @@ function handleNotification(notification) {
   }
 }
 
-function handleMassageNotification(message) {
-  //   userSendMassage
-  // userReciveMassage
+async function handleMassageNotification(message) {
   const userLoggin = userLogedIn.user.username;
   const userRecive = userReciveTextDOM.value;
-
-  if (message.userSendMassage == userLoggin && message.userSendMassage != userRecive) {
-    console.log("case 1");
-  } else if (message.userReciveMassage == userLoggin && message.userSendMassage == userRecive) {
-    console.log("case 2");
-  }
-
-
+  let messageBetweenUser = [];
+  messageProcessing(userLoggin, userRecive, message, messageBetweenUser); // xử lí logic tin nhắn
 }
 
+async function messageProcessing(userLoggin, userRecive, message, messageBetweenUser) {
+  if (message.userSendMassage == userLoggin) { // Khi người gửi tn là tôi
+    userReciveTextDOM.value = message.userReciveMassage;
+    if (message.userSendMassage != userRecive) {
+      displayChatOnlineNotification(message); // display message của tôi
+    }
+  }
+  else if (message.userReciveMassage == userLoggin) { // khi người nhận tin nhắn là tôi
+    userReciveTextDOM.value = message.userSendMassage;
+    if (userRecive != message.userReciveMassage) {
+      removeMassageDOM();
+      try { // xử lí bất đồng bộ để hiện thị tin nhắn
+        if (isMessageProcessing) { // tránh việc gửi nhiều request bị chạy nhiều lần
+          return
+        }
+        isMessageProcessing = true;
+        messageHistoryList = await fetchMessageHistory();
+        messageBetweenUser = await getAllMessageUserandSender(userReciveTextDOM.value)
+        await displayMassageDOM(messageBetweenUser);
+
+        setTimeout(async () => {
+          await displayChatOnlineNotification(message);
+        }, 400);
+
+        isMessageProcessing = false;
+      } catch (error) {
+        console.log("Fetch list message get error", error);
+      }
+    }
+  }
+}
 
 function displayChatMassage() {
   if (chatOnlineContainerDOM.style.display == "none") {
@@ -130,7 +154,7 @@ function displayChatMassage() {
   }
 }
 
-function displayChatOnlineNotification(notification) {
+async function displayChatOnlineNotification(notification) {
   const massageContainerDOM = document.createElement("div");
   massageContainerDOM.style.wordBreak = "break-word";
   massageContainerDOM.style.display = "flex";
@@ -156,12 +180,8 @@ function displayChatOnlineNotification(notification) {
   massageDOM.appendChild(timeMassageDOM);
 
   changeStyleMassage(massageContainerDOM, notification);
-
   scrollToBottom();
-}
-
-function scrollToBottom() {
-  textHistoryFatherDOM.scrollTop = textHistoryFatherDOM.scrollHeight;
+  return;
 }
 
 function chatOnlineFeauture() {
@@ -174,23 +194,35 @@ function onMessageInput() {
   messageInputDOM.addEventListener("keydown", async function (event) {
     if (event.key == "Enter") {
       event.preventDefault();
+
+      if (isMassageSending) { // tránh việc spam gửi tin nhắn quá nhiều
+        return;
+      }
+      isMassageSending = true;
+
       validateUserReciveText();
+
       if (messageInputDOM.value.trim() == "") {
+        isMassageSending = false;
         return;
       }
       else if (!isUserReciveVaild) {
+        isMassageSending = false;
         return;
       }
       else if (!userReciveTextDOM.value.trim()) {
+        isMassageSending = false;
         return;
       }
       else if (!messageInputDOM.value.trim()) {
+        isMassageSending = false;
         return;
       }
       else {
         await createMassage();
         messageInputDOM.value = "";
       }
+      isMassageSending = false;
     }
   });
 }
@@ -198,38 +230,51 @@ function onMessageInput() {
 function onMessageClick() {
   sendMessageButtonDOM.addEventListener("click", async function (event) {
     event.preventDefault();
+
+    if (isMassageSending) {
+      return;
+    }
+    isMassageSending = true;
+
     validateUserReciveText();
+
     if (!isUserReciveVaild) {
+      isMassageSending = false;
       return;
     }
     else if (!userReciveTextDOM.value.trim()) {
+      isMassageSending = false;
       return;
     }
     else if (!messageInputDOM.value.trim()) {
+      isMassageSending = false;
       return;
     }
     else if (messageInputDOM.value.trim() == "") {
+      isMassageSending = false;
       return;
     }
     else {
       await createMassage();
       messageInputDOM.value = "";
     }
+    isMassageSending = false;
   });
 }
 
 function checkUserRecive() {
-  userReciveTextDOM.addEventListener("keydown", function (event) {
+  userReciveTextDOM.addEventListener("keydown", async function (event) {
     const userRecive = userReciveTextDOM.value;
+    var allMessageSenderAndRecive = [];
     if (event.key == "Enter") {
       validateUserReciveText();
       if (isUserReciveVaild) {
-        allMessageSenderAndRecive = getAllMessageUserandSender(userRecive);
+        messageHistoryList = await fetchMessageHistory();
+        allMessageSenderAndRecive = await getAllMessageUserandSender(userRecive);
       } else {
         allMessageSenderAndRecive = [];
       }
-      massageListFatherDOM.innerHTML = "";
-      timeMassageDOM.innerHTML = "";
+      removeMassageDOM();
       displayMassageDOM(allMessageSenderAndRecive);
       return;
     }
@@ -248,7 +293,7 @@ function getAllMessageUserandSender(userReciveInput) {
   );
 }
 
-function displayMassageDOM(massageHistory) {
+async function displayMassageDOM(massageHistory) {
   const filterDateSimilar = filterDateSimilarMessages(massageHistory);
   filterDateSimilar.forEach((dates) => {
     const massageTimeDOM = document.createElement("div");
@@ -285,9 +330,21 @@ function displayMassageDOM(massageHistory) {
       massageDOM.appendChild(timeMassageDOM);
 
       changeStyleMassage(massageContainerDOM, message);
+      scrollToBottom();
     });
   });
 }
+
+function scrollToBottom() {
+  textHistoryFatherDOM.scrollTop = textHistoryFatherDOM.scrollHeight;
+}
+
+function removeMassageDOM() {
+  massageListFatherDOM.innerHTML = "";
+  timeMassageDOM.innerHTML = "";
+}
+
+
 
 function filterDateSimilarMessages(massageHistory) {
   const updateToLatestTime = massageHistory.sort(
