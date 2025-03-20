@@ -120,12 +120,7 @@ async function handleMassageNotification(message) {
     timeMassageDOM.innerHTML = "";
     massageListFatherDOM.innerHTML = "";
     messageHistoryList = await fetchMessageHistory();
-
-    setTimeout(() => {
-
-      displayMassageDOM(getAllMessageUserandSender(userReciveTextDOM.value));
-
-    }, 300);
+    displayMassageDOM(getAllMessageUserandSender(userReciveTextDOM.value));
 
   }
 }
