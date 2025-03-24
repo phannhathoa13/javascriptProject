@@ -109,41 +109,24 @@ function handleNotification(notification) {
 async function handleMassageNotification(message) {
   const userLoggin = userLogedIn.user.username;
   const userRecive = userReciveTextDOM.value;
-  let messageBetweenUser = [];
-  messageProcessing(userLoggin, userRecive, message, messageBetweenUser); // xử lí logic tin nhắn
+  if ((message.userSendMassage == userLoggin) && (message.userSendMassage != userRecive)) { // Khi người gửi tn là tôi
+    userReciveTextDOM.value = message.userReciveMassage
+    displayChatOnlineNotification(message); // display message của tôi
+    console.log("case 1");
+  }
+  else if ((message.userReciveMassage == userLoggin) && (message.userReciveMassage != userRecive) && (message.userSendMassage != userLoggin)) { // khi người nhận tin nhắn là tôi
+    userReciveTextDOM.value = message.userSendMassage
+    displayChatOnlineNotification(message);
+    console.log("case 2");
+  }
+  else if ((message.userReciveMassage == userLoggin) && (message.userSendMassage != userLoggin)) {
+    console.log("case 3");
+  }
+
 }
 
-async function messageProcessing(userLoggin, userRecive, message, messageBetweenUser) {
-  if (message.userSendMassage == userLoggin) { // Khi người gửi tn là tôi
-    userReciveTextDOM.value = message.userReciveMassage;
-    if (message.userSendMassage != userRecive) {
-      displayChatOnlineNotification(message); // display message của tôi
-    }
-  }
-  else if (message.userReciveMassage == userLoggin) { // khi người nhận tin nhắn là tôi
-    userReciveTextDOM.value = message.userSendMassage;
-    if (userRecive != message.userReciveMassage) {
-      removeMassageDOM();
-      try { // xử lí bất đồng bộ để hiện thị tin nhắn
-        if (isMessageProcessing) { // tránh việc gửi nhiều request bị chạy nhiều lần
-          return
-        }
-        isMessageProcessing = true;
-        messageHistoryList = await fetchMessageHistory();
-        messageBetweenUser = await getAllMessageUserandSender(userReciveTextDOM.value)
-        await displayMassageDOM(messageBetweenUser);
 
-        setTimeout(async () => {
-          await displayChatOnlineNotification(message);
-        }, 400);
 
-        isMessageProcessing = false;
-      } catch (error) {
-        console.log("Fetch list message get error", error);
-      }
-    }
-  }
-}
 
 function displayChatMassage() {
   if (chatOnlineContainerDOM.style.display == "none") {
@@ -293,7 +276,7 @@ function getAllMessageUserandSender(userReciveInput) {
   );
 }
 
-async function displayMassageDOM(massageHistory) {
+function displayMassageDOM(massageHistory) {
   const filterDateSimilar = filterDateSimilarMessages(massageHistory);
   filterDateSimilar.forEach((dates) => {
     const massageTimeDOM = document.createElement("div");
